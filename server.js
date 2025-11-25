@@ -67,25 +67,29 @@ app.get("/api/entries", async (req, res) => {
 // 2) Save data for a single day (upsert)
 // POST /api/entries
 // body: { date: "2025-11-25", data: { weight: 203.8, ... } }
-app.post("/api/entries", async (req, res) => {
-  const { date, data } = req.body;
-
-  if (!date || typeof date !== "string") {
-    return res.status(400).json({ error: "Missing or invalid 'date' in body" });
-  }
-  if (!data || typeof data !== "object") {
-    return res.status(400).json({ error: "Missing or invalid 'data' in body" });
-  }
-
   try {
+    // 1) Fetch existing data for that date (if any)
+    const existingResult = await pool.query(
+      "SELECT data FROM entries WHERE date = $1",
+      [date]
+    );
+    const existingRow = existingResult.rows[0];
+
+    // 2) Merge old + new
+    //    Existing keys are kept, new keys overwrite same-name ones
+    const mergedData = existingRow
+      ? { ...existingRow.data, ...data }
+      : data;
+
+    // 3) Upsert with the MERGED JSON
     const result = await pool.query(
       `
       INSERT INTO entries (date, data)
       VALUES ($1, $2)
-      ON CONFLICT (date) DO UPDATE SET data = EXCLUDED.data
+      ON CONFLICT (date) DO UPDATE SET data = $2
       RETURNING data
       `,
-      [date, data]
+      [date, mergedData]
     );
 
     res.json({ success: true, date, data: result.rows[0].data });
@@ -93,7 +97,7 @@ app.post("/api/entries", async (req, res) => {
     console.error("Error saving entry:", err);
     res.status(500).json({ error: "Database error saving entry" });
   }
-});
+
 
 // 3) Get a range of days (for weekly/monthly views)
 // GET /api/entries/range?from=2025-11-20&to=2025-11-27
