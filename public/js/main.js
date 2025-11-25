@@ -1,0 +1,524 @@
+const STORAGE_PREFIX = "aresTerminal_v1_";
+    const FIELD_IDS = [
+      "weight","sleep","energy","calories","protein","steps","water",
+      "mood","screen","vitalNotes",
+      "trainFocus","acadBlock","trainingNotes",
+      "top3","audit",
+      "rateDiscipline","rateFocus",
+      "habit1Done","habit2Done","habit3Done","habit4Done"
+    ];
+
+    let currentDate = new Date();
+    let currentDateKey = null;
+    let autoSaveTimer = null;
+    let isLoadingDay = false;
+    let lastSyncTime = null;
+    let weightChart = null;
+
+    function formatDateKey(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function updateDateDisplay() {
+      const el = document.getElementById("currentDate");
+      if (!el || !currentDateKey) return;
+      const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
+      el.textContent = currentDate.toLocaleDateString(undefined, options);
+
+      const todayDateText = document.getElementById("todayDateText");
+      if (todayDateText) {
+        const shortOpts = { weekday: "short", month: "short", day: "numeric" };
+        todayDateText.textContent = currentDate.toLocaleDateString(undefined, shortOpts);
+      }
+    }
+
+    function collectCurrentData() {
+      const data = {};
+      FIELD_IDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (el.type === "checkbox") {
+          data[id] = el.checked ? "1" : "0";
+        } else {
+          data[id] = el.value;
+        }
+      });
+
+      // --- per-day session type & execution grade ---
+      const sessionRow = document.querySelector('.pill-row[data-group="sessionType"]');
+      if (sessionRow) {
+        const active = sessionRow.querySelector('.pill.active');
+        data.sessionType = active ? active.getAttribute("data-value") : "";
+      }
+
+      const execRow = document.querySelector('.pill-row[data-group="execution"]');
+      if (execRow) {
+        const active = execRow.querySelector('.pill.active');
+        data.executionGrade = active ? active.getAttribute("data-value") : "";
+      }
+      // --------------------------------------------------------
+
+      return data;
+    }
+
+    function markSynced() {
+      lastSyncTime = new Date();
+      updateSyncMessage();
+    }
+
+    function updateSyncMessage() {
+      const el = document.getElementById("syncMessage");
+      if (!el) return;
+      if (!lastSyncTime) {
+        el.textContent = "Last sync: --";
+        return;
+      }
+      const opts = { hour: "2-digit", minute: "2-digit" };
+      el.textContent = "Last sync: " + lastSyncTime.toLocaleTimeString(undefined, opts);
+    }
+
+    async function saveDay(manual = false) {
+      if (!currentDateKey) return;
+      const payload = {
+        date: currentDateKey,
+        data: collectCurrentData()
+      };
+      try {
+        await fetch("/api/entries", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (manual) {
+          console.log("Manual save complete for", currentDateKey);
+        }
+        markSynced();
+        renderHistoryTable(); // update weekly view after saves
+      } catch (err) {
+        console.error("Error saving day:", err);
+      }
+    }
+
+    function scheduleAutoSave() {
+      if (isLoadingDay) return;
+      if (autoSaveTimer) clearTimeout(autoSaveTimer);
+      autoSaveTimer = setTimeout(() => {
+        saveDay(false);
+      }, 800); // debounce ~0.8s
+      updateTodayStrip();
+    }
+
+    function applySingleSelectPill(group, value) {
+      const row = document.querySelector(`.pill-row[data-group="${group}"]`);
+      if (!row) return;
+      const pills = row.querySelectorAll(".pill");
+      pills.forEach(p => {
+        p.classList.toggle("active", !!value && p.getAttribute("data-value") === value);
+      });
+    }
+
+    async function loadDay(dateKey) {
+      isLoadingDay = true;
+      try {
+        const res = await fetch(`/api/entries?date=${encodeURIComponent(dateKey)}`);
+        if (!res.ok) {
+          console.warn("No entry yet for", dateKey);
+        }
+        const json = await res.json().catch(() => ({}));
+        const data = json && json.data ? json.data : {};
+
+        FIELD_IDS.forEach(id => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          if (el.type === "checkbox") {
+            el.checked = (data[id] || "0") === "1";
+          } else {
+            el.value = data[id] ?? "";
+          }
+        });
+
+        // per-day session type & execution grade
+        applySingleSelectPill("sessionType", data.sessionType || "");
+        applySingleSelectPill("execution", data.executionGrade || "");
+      } catch (err) {
+        console.error("Error loading day:", err);
+      } finally {
+        isLoadingDay = false;
+      }
+      updateTodayStrip();
+      markSynced();
+      renderHistoryTable();
+    }
+
+    function updateWeightChart(labels, weights) {
+      const canvas = document.getElementById("weightChart");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!weightChart) {
+        weightChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels,
+            datasets: [
+              {
+                data: weights,
+                tension: 0.3,
+                fill: false,
+                pointRadius: 2,
+                borderWidth: 2
+              }
+            ]
+          },
+          options: {
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              x: {
+                ticks: { autoSkip: true, maxTicksLimit: 7 }
+              },
+              y: {
+                beginAtZero: false
+              }
+            }
+          }
+        });
+      } else {
+        weightChart.data.labels = labels;
+        weightChart.data.datasets[0].data = weights;
+        weightChart.update();
+      }
+    }
+
+    async function renderHistoryTable() {
+      const body = document.getElementById("historyBody");
+      if (!body) return;
+      body.innerHTML = "";
+
+      const toDate = new Date(currentDate);
+      const fromDate = new Date(currentDate);
+      fromDate.setDate(fromDate.getDate() - 6);
+
+      const fromKey = formatDateKey(fromDate);
+      const toKey = formatDateKey(toDate);
+
+      try {
+        const res = await fetch(`/api/entries/range?from=${encodeURIComponent(fromKey)}&to=${encodeURIComponent(toKey)}`);
+        const json = await res.json();
+        const entries = json.entries || {};
+
+        const days = [];
+        const temp = new Date(fromDate);
+        while (temp <= toDate) {
+          days.push(formatDateKey(temp));
+          temp.setDate(temp.getDate() + 1);
+        }
+
+        let hasAny = false;
+        const labels = [];
+        const weights = [];
+
+        days.forEach(key => {
+          const d = entries[key] || {};
+          if (Object.keys(d).length > 0) hasAny = true;
+
+          const row = document.createElement("tr");
+          const cells = [
+            key,
+            d.weight || "-",
+            d.calories || "-",
+            d.rateDiscipline || "-"
+          ];
+          cells.forEach(text => {
+            const td = document.createElement("td");
+            td.textContent = text;
+            row.appendChild(td);
+          });
+          body.appendChild(row);
+
+          labels.push(key.slice(5)); // MM-DD
+          const w = parseFloat(d.weight);
+          weights.push(isNaN(w) ? null : w);
+        });
+
+        if (!hasAny) {
+          body.innerHTML = "";
+          const row = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 4;
+          td.textContent = "Fill out at least one day to see your weekly history.";
+          row.appendChild(td);
+          body.appendChild(row);
+        }
+
+        updateWeightChart(labels, weights);
+      } catch (err) {
+        console.error("Error rendering history:", err);
+        const row = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 4;
+        td.textContent = "Error loading history.";
+        row.appendChild(td);
+        body.appendChild(row);
+      }
+    }
+
+    function initFields() {
+      FIELD_IDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener("input", scheduleAutoSave);
+        el.addEventListener("change", scheduleAutoSave);
+      });
+    }
+
+    function storageKey(id) {
+      return STORAGE_PREFIX + id;
+    }
+
+    function initPills() {
+      document.querySelectorAll(".pill-row").forEach(row => {
+        const group = row.getAttribute("data-group") || "";
+        const pills = row.querySelectorAll(".pill");
+
+        // Single-select groups (per-day only)
+        const isSingleSelect = group === "execution" || group === "sessionType";
+        const persists = !isSingleSelect; // non-execution/session groups persist (rules, etc.)
+
+        let key;
+        if (persists) {
+          key = storageKey("pill_" + group);
+          const saved = localStorage.getItem(key);
+          if (saved) {
+            const values = saved.split("||");
+            pills.forEach(p => {
+              if (values.includes(p.getAttribute("data-value"))) {
+                p.classList.add("active");
+              }
+            });
+          }
+        }
+
+        row.addEventListener("click", e => {
+          const pill = e.target.closest(".pill");
+          if (!pill) return;
+
+          if (isSingleSelect) {
+            const alreadyActive = pill.classList.contains("active");
+            if (alreadyActive) {
+              pill.classList.remove("active");
+            } else {
+              pills.forEach(p => p.classList.remove("active"));
+              pill.classList.add("active");
+            }
+          } else {
+            pill.classList.toggle("active");
+          }
+
+          if (persists && key) {
+            const activeValues = Array.from(pills)
+              .filter(p => p.classList.contains("active"))
+              .map(p => p.getAttribute("data-value"));
+            localStorage.setItem(key, activeValues.join("||"));
+          }
+
+          scheduleAutoSave();
+        });
+      });
+    }
+
+    function initHabits() {
+      for (let i = 1; i <= 4; i++) {
+        const nameInput = document.getElementById(`habit${i}Name`);
+        if (!nameInput) continue;
+        const key = storageKey(`habitName${i}`);
+        const saved = localStorage.getItem(key);
+        if (saved) {
+          nameInput.value = saved;
+        }
+        nameInput.addEventListener("input", () => {
+          localStorage.setItem(key, nameInput.value.trim());
+        });
+      }
+    }
+
+    function resetToday() {
+      const confirmReset = confirm("Reset fields for this day? This will clear entries for this date.");
+      if (!confirmReset) return;
+
+      FIELD_IDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (el.type === "checkbox") {
+          el.checked = false;
+        } else {
+          el.value = "";
+        }
+      });
+
+      // Clear per-day pills (session type & execution only)
+      document
+        .querySelectorAll('[data-group="sessionType"] .pill, [data-group="execution"] .pill')
+        .forEach(p => p.classList.remove("active"));
+
+      updateTodayStrip();
+      saveDay(true);
+    }
+
+    function hardReset() {
+      const confirmReset = confirm(
+        "Hard reset will clear pill states and local cache. It does NOT delete backend history yet. Proceed?"
+      );
+      if (!confirmReset) return;
+
+      Object.keys(localStorage)
+        .filter(k => k.startsWith(STORAGE_PREFIX))
+        .forEach(k => localStorage.removeItem(k));
+
+      window.location.reload();
+    }
+
+    function shiftDay(delta) {
+      saveDay(false);
+      currentDate.setDate(currentDate.getDate() + delta);
+      currentDateKey = formatDateKey(currentDate);
+      updateDateDisplay();
+      loadDay(currentDateKey);
+    }
+
+    function updateTodayStrip() {
+      const sleepVal = parseFloat(document.getElementById("sleep")?.value || "0");
+      const caloriesVal = parseFloat(document.getElementById("calories")?.value || "0");
+      const proteinVal = parseFloat(document.getElementById("protein")?.value || "0");
+      const screenVal = parseFloat(document.getElementById("screen")?.value || "0");
+      const disciplineVal = parseFloat(document.getElementById("rateDiscipline")?.value || "0");
+      const focusTextRaw = document.getElementById("trainFocus")?.value || "";
+
+      const focusEl = document.getElementById("todayFocusText");
+      if (focusEl) {
+        let display = focusTextRaw.replace(/\s+/g, " ").trim();
+        if (!display) display = "Set your training focus for today.";
+        if (display.length > 80) display = display.slice(0, 80) + "…";
+        focusEl.textContent = "Training Focus: " + display;
+      }
+
+      const metricSleep = document.getElementById("metricSleepValue");
+      const metricCalories = document.getElementById("metricCaloriesValue");
+      const metricProtein = document.getElementById("metricProteinValue");
+      const metricScreen = document.getElementById("metricScreenValue");
+      const metricDiscipline = document.getElementById("metricDisciplineValue");
+
+      if (metricSleep) metricSleep.textContent = sleepVal ? `${sleepVal.toFixed(1)} h` : "–";
+      if (metricCalories) metricCalories.textContent = caloriesVal ? `${Math.round(caloriesVal)} kcal` : "–";
+      if (metricProtein) metricProtein.textContent = proteinVal ? `${Math.round(proteinVal)} g` : "–";
+      if (metricScreen) metricScreen.textContent = screenVal ? `${screenVal.toFixed(1)} h` : "–";
+      if (metricDiscipline) metricDiscipline.textContent = (disciplineVal || disciplineVal === 0) ? `${disciplineVal || 0}/10` : "–";
+
+      const tagsEl = document.getElementById("todayTags");
+      if (!tagsEl) return;
+      tagsEl.innerHTML = "";
+
+      const tags = [];
+
+      if (sleepVal && sleepVal >= 7.5) {
+        tags.push({ type: "good", text: "Rested" });
+      } else if (sleepVal && sleepVal < 7) {
+        tags.push({ type: "warning", text: "Sleep Debt" });
+      }
+
+      if (caloriesVal && caloriesVal > 2500) {
+        tags.push({ type: "warning", text: "Calories High" });
+      } else if (caloriesVal && caloriesVal >= 2100 && caloriesVal <= 2500) {
+        tags.push({ type: "good", text: "Fuel On Target" });
+      }
+
+      if (proteinVal && proteinVal >= 180) {
+        tags.push({ type: "good", text: "Protein Hit" });
+      } else if (proteinVal && proteinVal < 150) {
+        tags.push({ type: "warning", text: "Low Protein" });
+      }
+
+      if (screenVal && screenVal > 4) {
+        tags.push({ type: "bad", text: "High Screen" });
+      } else if (screenVal && screenVal <= 3) {
+        tags.push({ type: "good", text: "Screen Locked" });
+      }
+
+      if (disciplineVal && disciplineVal >= 7) {
+        tags.push({ type: "good", text: "On Track" });
+      } else if (disciplineVal && disciplineVal <= 4) {
+        tags.push({ type: "bad", text: "Discipline Low" });
+      }
+
+      if (tags.length === 0) {
+        tags.push({ type: "", text: "Awaiting data" });
+      }
+
+      tags.forEach(tag => {
+        const span = document.createElement("span");
+        span.classList.add("status-pill");
+        if (tag.type) span.classList.add(tag.type);
+        span.textContent = tag.text;
+        tagsEl.appendChild(span);
+      });
+    }
+
+    function initButtons() {
+      const saveBtn = document.getElementById("saveDay");
+      const exportBtn = document.getElementById("exportData");
+      const resetBtn = document.getElementById("resetToday");
+      const hardResetBtn = document.getElementById("hardReset");
+      const prevDayBtn = document.getElementById("prevDay");
+      const nextDayBtn = document.getElementById("nextDay");
+      const manualSyncBtn = document.getElementById("manualSync");
+
+      if (saveBtn) saveBtn.addEventListener("click", () => saveDay(true));
+      if (exportBtn) exportBtn.addEventListener("click", exportData);
+      if (resetBtn) resetBtn.addEventListener("click", resetToday);
+      if (hardResetBtn) hardResetBtn.addEventListener("click", hardReset);
+      if (prevDayBtn) prevDayBtn.addEventListener("click", () => shiftDay(-1));
+      if (nextDayBtn) nextDayBtn.addEventListener("click", () => shiftDay(1));
+      if (manualSyncBtn) manualSyncBtn.addEventListener("click", () => {
+        if (!currentDateKey) return;
+        loadDay(currentDateKey);
+      });
+    }
+
+    async function exportData() {
+      try {
+        const res = await fetch("/api/export");
+        if (!res.ok) {
+          alert("Error exporting data.");
+          return;
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "ares-entries.json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error("Export error:", err);
+        alert("Export failed. Check console for details.");
+      }
+    }
+
+    function init() {
+      currentDate = new Date();
+      currentDateKey = formatDateKey(currentDate);
+      updateDateDisplay();
+      initFields();
+      initPills();
+      initHabits();
+      initButtons();
+      updateSyncMessage();
+      loadDay(currentDateKey);
+    }
+
+    document.addEventListener("DOMContentLoaded", init);
