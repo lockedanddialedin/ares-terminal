@@ -221,6 +221,46 @@
         </div>
       </div>
     </section>
+    <!-- Settings / Targets -->
+    <section class="card">
+      <div class="card-title-row">
+        <h2>System Settings</h2>
+        <span class="card-tag">Targets</span>
+      </div>
+
+      <p class="section-label">Targets</p>
+      <p class="today-subtitle" style="margin-bottom:10px;">
+        These targets drive the Today at a Glance tags (sleep debt, calories high, protein hit, screen locked).
+      </p>
+
+      <div class="tiny-row">
+        <div>
+          <label for="targetSleep">Sleep target (hrs)</label>
+          <input id="targetSleep" type="number" step="0.1" placeholder="e.g. 8.0" />
+        </div>
+        <div>
+          <label for="targetScreen">Max screen (hrs)</label>
+          <input id="targetScreen" type="number" step="0.1" placeholder="e.g. 3.0" />
+        </div>
+        <div>
+          <label for="targetDiscipline">Discipline target (0–10)</label>
+          <input id="targetDiscipline" type="number" step="1" min="0" max="10" placeholder="e.g. 8" />
+        </div>
+      </div>
+
+      <div class="small-row">
+        <div>
+          <label for="targetCalories">Calories target</label>
+          <input id="targetCalories" type="number" step="1" placeholder="e.g. 2300" />
+        </div>
+        <div>
+          <label for="targetProtein">Protein target (g)</label>
+          <input id="targetProtein" type="number" step="1" placeholder="e.g. 190" />
+        </div>
+      </div>
+
+      <button id="saveSettings">Save Settings</button>
+    </section>
 
         <!-- Habit Tracker -->
     <section class="card">
@@ -367,6 +407,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script src="/js/main.js"></script>
+    <div id="toastContainer" class="toast-container"></div>
 
 </body>
 </html>

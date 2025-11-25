@@ -471,3 +471,51 @@
         justify-content: flex-start;
       }
     }
+/* Settings card tweaks (re-use existing layout classes) */
+/* No extra styling needed beyond what's already there,
+   but this is a hook if you want to theme it later. */
+
+/* Toast notifications */
+.toast-container {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 9999;
+}
+
+.toast {
+  min-width: 180px;
+  max-width: 260px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: rgba(15, 23, 42, 0.95);
+  color: #e5e7eb;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.toast-success {
+  border-color: #22c55e;
+}
+
+.toast-error {
+  border-color: #ef4444;
+}
+
+.toast-message {
+  flex: 1;
+}
+
+.toast-close {
+  cursor: pointer;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}

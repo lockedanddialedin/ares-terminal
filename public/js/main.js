@@ -1,4 +1,18 @@
 const STORAGE_PREFIX = "aresTerminal_v1_";
+    const SETTINGS_KEY = STORAGE_PREFIX + "settings";
+
+let aresSettings = null;
+
+function getDefaultSettings() {
+  return {
+    targetSleep: 8.0,
+    targetCalories: 2300,
+    targetProtein: 190,
+    targetScreen: 3.0,
+    targetDiscipline: 8
+  };
+}
+
     const FIELD_IDS = [
       "weight","sleep","energy","calories","protein","steps","water",
       "mood","screen","vitalNotes",
@@ -80,29 +94,145 @@ const STORAGE_PREFIX = "aresTerminal_v1_";
       el.textContent = "Last sync: " + lastSyncTime.toLocaleTimeString(undefined, opts);
     }
 
-    async function saveDay(manual = false) {
-      if (!currentDateKey) return;
-      const payload = {
-        date: currentDateKey,
-        data: collectCurrentData()
-      };
-      try {
-        await fetch("/api/entries", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        if (manual) {
-          console.log("Manual save complete for", currentDateKey);
-        }
-        markSynced();
-        renderHistoryTable(); // update weekly view after saves
-        updateHabitStats();   // update habit streaks
+   async function saveDay(manual = false) {
+  const saveBtn = document.getElementById("saveDay");
 
-      } catch (err) {
-        console.error("Error saving day:", err);
-      }
+  if (manual && saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Saving...";
+  }
+
+  if (!currentDateKey) {
+    if (manual && saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = "Save Day";
     }
+    return;
+  }
+
+  const payload = {
+    date: currentDateKey,
+    data: collectCurrentData()
+  };
+
+  try {
+    const res = await fetch("/api/entries", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      throw new Error(`Save failed with status ${res.status}`);
+    }
+
+    if (manual) {
+      console.log("Manual save complete for", currentDateKey);
+      showToast("success", "Day saved");
+    }
+
+    markSynced();
+    renderHistoryTable(); // update weekly view after saves
+    updateHabitStats();   // update habit streaks
+  } catch (err) {
+    console.error("Error saving day:", err);
+    if (manual) {
+      showToast("error", "Error saving. Check connection.");
+    }
+  } finally {
+    if (manual && saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = "Save Day";
+    }
+  }
+}
+
+    function showToast(type, message) {
+  const container = document.getElementById("toastContainer");
+  if (!container) {
+    console.warn("Toast container not found");
+    return;
+  }
+
+  const toast = document.createElement("div");
+  toast.classList.add("toast");
+  if (type === "success") toast.classList.add("toast-success");
+  if (type === "error") toast.classList.add("toast-error");
+
+  const msg = document.createElement("span");
+  msg.classList.add("toast-message");
+  msg.textContent = message;
+
+  const close = document.createElement("span");
+  close.classList.add("toast-close");
+  close.textContent = "×";
+  close.addEventListener("click", () => {
+    toast.remove();
+  });
+
+  toast.appendChild(msg);
+  toast.appendChild(close);
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.remove();
+  }, 2500);
+}
+    function loadSettings() {
+  const stored = localStorage.getItem(SETTINGS_KEY);
+  const defaults = getDefaultSettings();
+  try {
+    aresSettings = stored ? { ...defaults, ...JSON.parse(stored) } : { ...defaults };
+  } catch (e) {
+    console.error("Error parsing settings, using defaults:", e);
+    aresSettings = { ...defaults };
+  }
+
+  // Push into UI fields if present
+  const map = {
+    targetSleep: "targetSleep",
+    targetCalories: "targetCalories",
+    targetProtein: "targetProtein",
+    targetScreen: "targetScreen",
+    targetDiscipline: "targetDiscipline"
+  };
+  Object.keys(map).forEach(key => {
+    const el = document.getElementById(map[key]);
+    if (el && aresSettings[key] != null) {
+      el.value = aresSettings[key];
+    }
+  });
+}
+
+function saveSettingsFromUI() {
+  if (!aresSettings) {
+    aresSettings = getDefaultSettings();
+  }
+
+  function numFrom(id, fallback) {
+    const el = document.getElementById(id);
+    if (!el) return fallback;
+    const v = parseFloat(el.value);
+    return isNaN(v) ? fallback : v;
+  }
+
+  aresSettings.targetSleep = numFrom("targetSleep", aresSettings.targetSleep);
+  aresSettings.targetCalories = numFrom("targetCalories", aresSettings.targetCalories);
+  aresSettings.targetProtein = numFrom("targetProtein", aresSettings.targetProtein);
+  aresSettings.targetScreen = numFrom("targetScreen", aresSettings.targetScreen);
+  aresSettings.targetDiscipline = numFrom("targetDiscipline", aresSettings.targetDiscipline);
+
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(aresSettings));
+  showToast("success", "Settings saved");
+  updateTodayStrip();
+}
+
+function getSettings() {
+  if (!aresSettings) {
+    loadSettings();
+  }
+  return aresSettings || getDefaultSettings();
+}
 
     function scheduleAutoSave() {
       if (isLoadingDay) return;
@@ -499,6 +629,8 @@ const STORAGE_PREFIX = "aresTerminal_v1_";
       const screenVal = parseFloat(document.getElementById("screen")?.value || "0");
       const disciplineVal = parseFloat(document.getElementById("rateDiscipline")?.value || "0");
       const focusTextRaw = document.getElementById("trainFocus")?.value || "";
+      const s = getSettings();
+
 
       const focusEl = document.getElementById("todayFocusText");
       if (focusEl) {
@@ -520,40 +652,56 @@ const STORAGE_PREFIX = "aresTerminal_v1_";
       if (metricScreen) metricScreen.textContent = screenVal ? `${screenVal.toFixed(1)} h` : "–";
       if (metricDiscipline) metricDiscipline.textContent = (disciplineVal || disciplineVal === 0) ? `${disciplineVal || 0}/10` : "–";
 
-      const tagsEl = document.getElementById("todayTags");
+            const tagsEl = document.getElementById("todayTags");
       if (!tagsEl) return;
       tagsEl.innerHTML = "";
 
       const tags = [];
 
-      if (sleepVal && sleepVal >= 7.5) {
-        tags.push({ type: "good", text: "Rested" });
-      } else if (sleepVal && sleepVal < 7) {
-        tags.push({ type: "warning", text: "Sleep Debt" });
+      // Sleep
+      if (sleepVal) {
+        if (sleepVal >= s.targetSleep) {
+          tags.push({ type: "good", text: "Rested" });
+        } else if (sleepVal < s.targetSleep - 0.5) {
+          tags.push({ type: "warning", text: "Sleep Debt" });
+        }
       }
 
-      if (caloriesVal && caloriesVal > 2500) {
-        tags.push({ type: "warning", text: "Calories High" });
-      } else if (caloriesVal && caloriesVal >= 2100 && caloriesVal <= 2500) {
-        tags.push({ type: "good", text: "Fuel On Target" });
+      // Calories
+      if (caloriesVal) {
+        const diff = Math.abs(caloriesVal - s.targetCalories);
+        if (diff <= 200) {
+          tags.push({ type: "good", text: "Fuel On Target" });
+        } else if (caloriesVal > s.targetCalories + 200) {
+          tags.push({ type: "warning", text: "Calories High" });
+        }
       }
 
-      if (proteinVal && proteinVal >= 180) {
-        tags.push({ type: "good", text: "Protein Hit" });
-      } else if (proteinVal && proteinVal < 150) {
-        tags.push({ type: "warning", text: "Low Protein" });
+      // Protein
+      if (proteinVal) {
+        if (proteinVal >= s.targetProtein) {
+          tags.push({ type: "good", text: "Protein Hit" });
+        } else if (proteinVal < s.targetProtein) {
+          tags.push({ type: "warning", text: "Low Protein" });
+        }
       }
 
-      if (screenVal && screenVal > 4) {
-        tags.push({ type: "bad", text: "High Screen" });
-      } else if (screenVal && screenVal <= 3) {
-        tags.push({ type: "good", text: "Screen Locked" });
+      // Screen
+      if (screenVal) {
+        if (screenVal > s.targetScreen) {
+          tags.push({ type: "bad", text: "High Screen" });
+        } else if (screenVal <= s.targetScreen) {
+          tags.push({ type: "good", text: "Screen Locked" });
+        }
       }
 
-      if (disciplineVal && disciplineVal >= 7) {
-        tags.push({ type: "good", text: "On Track" });
-      } else if (disciplineVal && disciplineVal <= 4) {
-        tags.push({ type: "bad", text: "Discipline Low" });
+      // Discipline
+      if (disciplineVal || disciplineVal === 0) {
+        if (disciplineVal >= s.targetDiscipline) {
+          tags.push({ type: "good", text: "On Track" });
+        } else if (disciplineVal <= 4) {
+          tags.push({ type: "bad", text: "Discipline Low" });
+        }
       }
 
       if (tags.length === 0) {
@@ -567,6 +715,7 @@ const STORAGE_PREFIX = "aresTerminal_v1_";
         span.textContent = tag.text;
         tagsEl.appendChild(span);
       });
+
     }
 
     function initButtons() {
@@ -577,7 +726,10 @@ const STORAGE_PREFIX = "aresTerminal_v1_";
       const prevDayBtn = document.getElementById("prevDay");
       const nextDayBtn = document.getElementById("nextDay");
       const manualSyncBtn = document.getElementById("manualSync");
+      const saveSettingsBtn = document.getElementById("saveSettings");
 
+
+      if (saveSettingsBtn) saveSettingsBtn.addEventListener("click", saveSettingsFromUI);
       if (saveBtn) saveBtn.addEventListener("click", () => saveDay(true));
       if (exportBtn) exportBtn.addEventListener("click", exportData);
       if (resetBtn) resetBtn.addEventListener("click", resetToday);
