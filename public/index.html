@@ -280,10 +280,12 @@
       </div>
     </div>
     <div class="top-actions">
-      <button id="saveDay">Save Day</button>
-      <button id="resetToday">Reset Day</button>
-      <button id="hardReset">Hard Reset</button>
-    </div>
+  <button id="saveDay">Save Day</button>
+  <button id="exportData">Export Data</button>
+  <button id="resetToday">Reset Day</button>
+  <button id="hardReset">Hard Reset</button>
+</div>
+
   </header>
 
   <section style="margin-bottom: 18px;">
@@ -712,19 +714,43 @@
       loadDay(currentDateKey);
     }
 
-    function initButtons() {
-      const saveBtn = document.getElementById("saveDay");
-      const resetBtn = document.getElementById("resetToday");
-      const hardResetBtn = document.getElementById("hardReset");
-      const prevDayBtn = document.getElementById("prevDay");
-      const nextDayBtn = document.getElementById("nextDay");
+ function initButtons() {
+  const saveBtn = document.getElementById("saveDay");
+  const exportBtn = document.getElementById("exportData");
+  const resetBtn = document.getElementById("resetToday");
+  const hardResetBtn = document.getElementById("hardReset");
+  const prevDayBtn = document.getElementById("prevDay");
+  const nextDayBtn = document.getElementById("nextDay");
 
-      if (saveBtn) saveBtn.addEventListener("click", () => saveDay(true));
-      if (resetBtn) resetBtn.addEventListener("click", resetToday);
-      if (hardResetBtn) hardResetBtn.addEventListener("click", hardReset);
-      if (prevDayBtn) prevDayBtn.addEventListener("click", () => shiftDay(-1));
-      if (nextDayBtn) nextDayBtn.addEventListener("click", () => shiftDay(1));
+  if (saveBtn) saveBtn.addEventListener("click", () => saveDay(true));
+  if (exportBtn) exportBtn.addEventListener("click", exportData);
+  if (resetBtn) resetBtn.addEventListener("click", resetToday);
+  if (hardResetBtn) hardResetBtn.addEventListener("click", hardReset);
+  if (prevDayBtn) prevDayBtn.addEventListener("click", () => shiftDay(-1));
+  if (nextDayBtn) nextDayBtn.addEventListener("click", () => shiftDay(1));
+}
+  async function exportData() {
+  try {
+    const res = await fetch("/api/export");
+    if (!res.ok) {
+      alert("Error exporting data.");
+      return;
     }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "ares-entries.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error("Export error:", err);
+    alert("Export failed. Check console for details.");
+  }
+}
+
 
     function init() {
       currentDate = new Date();

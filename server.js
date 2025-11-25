@@ -101,6 +101,14 @@ app.get("/api/entries/range", (req, res) => {
 
   res.json({ from, to, entries: result });
 });
+// 4) Export all entries as JSON (for backup / analysis)
+// GET /api/export
+app.get("/api/export", (req, res) => {
+  const entries = readEntries();
+  res.setHeader("Content-Type", "application/json");
+  res.setHeader("Content-Disposition", "attachment; filename=ares-entries.json");
+  res.send(JSON.stringify(entries, null, 2));
+});
 
 // Fallback: send index.html for any unknown route (for SPA behavior)
 app.use((req, res) => {
