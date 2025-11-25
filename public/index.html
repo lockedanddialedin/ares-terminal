@@ -32,7 +32,6 @@
     .date {
       font-size: 0.95rem;
       color: #d1d5db;
-      margin-bottom: 16px;
     }
     .top-row {
       display: flex;
@@ -51,6 +50,7 @@
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 16px;
+      margin-top: 16px;
     }
     @media (max-width: 1100px) {
       .grid {
@@ -232,6 +232,7 @@
       border-color: rgba(148, 163, 184, 0.5);
       padding: 4px 8px;
       font-size: 0.8rem;
+      color: #e5e7eb;
     }
     .history-table-wrapper {
       max-height: 220px;
@@ -266,6 +267,106 @@
       color: #6b7280;
       margin-top: 12px;
     }
+
+    /* TODAY AT A GLANCE + SYNC STATUS */
+    .dashboard-top-card {
+      margin-bottom: 18px;
+    }
+    .today-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .today-subtitle {
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+    .sync-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: #9ca3af;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .sync-status span {
+      opacity: 0.9;
+    }
+    .today-strip-card {
+      padding: 16px 16px 14px;
+    }
+    .today-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .today-main {
+      min-width: 180px;
+    }
+    .today-date {
+      font-size: 0.85rem;
+      color: #9ca3af;
+      margin-bottom: 4px;
+    }
+    .today-focus {
+      font-size: 0.85rem;
+      color: #e5e7eb;
+    }
+    .today-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+      gap: 8px;
+      flex: 1;
+    }
+    .today-metric {
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 10px;
+      padding: 6px 8px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      min-width: 90px;
+    }
+    .today-metric-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: #9ca3af;
+      margin-bottom: 2px;
+    }
+    .today-metric-value {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .today-metric-sub {
+      font-size: 0.7rem;
+      color: #9ca3af;
+    }
+    .today-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .today-tags .status-pill {
+      font-size: 0.7rem;
+    }
+
+    @media (max-width: 700px) {
+      .top-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .today-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .sync-status {
+        justify-content: flex-start;
+      }
+    }
   </style>
 </head>
 <body>
@@ -280,15 +381,14 @@
       </div>
     </div>
     <div class="top-actions">
-  <button id="saveDay">Save Day</button>
-  <button id="exportData">Export Data</button>
-  <button id="resetToday">Reset Day</button>
-  <button id="hardReset">Hard Reset</button>
-</div>
-
+      <button id="saveDay">Save Day</button>
+      <button id="exportData">Export Data</button>
+      <button id="resetToday">Reset Day</button>
+      <button id="hardReset">Hard Reset</button>
+    </div>
   </header>
 
-  <section style="margin-bottom: 18px;">
+  <section style="margin-bottom: 12px;">
     <div class="ares-mode">
       <span class="ares-highlight">Ares Mode</span>
       Discipline is the default. You input the data. I show you whether your actions match the athlete you say you want to be.
@@ -297,6 +397,54 @@
       • Morning: Set your training focus, non-negotiables, and schedule.<br />
       • Night: Log what actually happened. Rate yourself. Adjust tomorrow.
     </div>
+  </section>
+
+  <!-- TODAY AT A GLANCE + SYNC -->
+  <section class="card today-strip-card dashboard-top-card">
+    <div class="today-header">
+      <div>
+        <h2>Today at a Glance</h2>
+        <p class="today-subtitle">Instant read on sleep, fuel, and discipline for the day.</p>
+      </div>
+      <div class="sync-status">
+        <span id="syncMessage">Last sync: --</span>
+        <button id="manualSync" class="ghost-btn">Sync Now</button>
+      </div>
+    </div>
+    <div class="today-strip">
+      <div class="today-main">
+        <p class="today-date" id="todayDateText">–</p>
+        <p class="today-focus" id="todayFocusText">Set your training focus for today.</p>
+      </div>
+      <div class="today-metrics">
+        <div class="today-metric">
+          <div class="today-metric-label">Sleep</div>
+          <div class="today-metric-value" id="metricSleepValue">–</div>
+          <div class="today-metric-sub">Target ~8h</div>
+        </div>
+        <div class="today-metric">
+          <div class="today-metric-label">Calories</div>
+          <div class="today-metric-value" id="metricCaloriesValue">–</div>
+          <div class="today-metric-sub">2300 target (edit later)</div>
+        </div>
+        <div class="today-metric">
+          <div class="today-metric-label">Protein</div>
+          <div class="today-metric-value" id="metricProteinValue">–</div>
+          <div class="today-metric-sub">190g target (edit later)</div>
+        </div>
+        <div class="today-metric">
+          <div class="today-metric-label">Screen</div>
+          <div class="today-metric-value" id="metricScreenValue">–</div>
+          <div class="today-metric-sub">&le; 3h goal</div>
+        </div>
+        <div class="today-metric">
+          <div class="today-metric-label">Discipline</div>
+          <div class="today-metric-value" id="metricDisciplineValue">–</div>
+          <div class="today-metric-sub">Self-rated</div>
+        </div>
+      </div>
+    </div>
+    <div class="today-tags" id="todayTags"></div>
   </section>
 
   <main class="grid">
@@ -477,12 +625,17 @@
           </tbody>
         </table>
       </div>
+      <p class="section-label" style="margin-top:10px;">Weight Trend (7 days)</p>
+      <canvas id="weightChart" height="120" style="margin-top:8px;"></canvas>
     </section>
   </main>
 
   <footer class="footer">
     Tip: Bookmark this site and set it as your first tab. Open it every morning and close it only when the Night Audit is complete.
   </footer>
+
+  <!-- Chart.js for weight graph -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script>
     const STORAGE_PREFIX = "aresTerminal_v1_";
@@ -498,6 +651,8 @@
     let currentDateKey = null;
     let autoSaveTimer = null;
     let isLoadingDay = false;
+    let lastSyncTime = null;
+    let weightChart = null;
 
     function formatDateKey(d) {
       const y = d.getFullYear();
@@ -511,6 +666,12 @@
       if (!el || !currentDateKey) return;
       const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
       el.textContent = currentDate.toLocaleDateString(undefined, options);
+
+      const todayDateText = document.getElementById("todayDateText");
+      if (todayDateText) {
+        const shortOpts = { weekday: "short", month: "short", day: "numeric" };
+        todayDateText.textContent = currentDate.toLocaleDateString(undefined, shortOpts);
+      }
     }
 
     function collectCurrentData() {
@@ -520,6 +681,22 @@
         if (el) data[id] = el.value;
       });
       return data;
+    }
+
+    function markSynced() {
+      lastSyncTime = new Date();
+      updateSyncMessage();
+    }
+
+    function updateSyncMessage() {
+      const el = document.getElementById("syncMessage");
+      if (!el) return;
+      if (!lastSyncTime) {
+        el.textContent = "Last sync: --";
+        return;
+      }
+      const opts = { hour: "2-digit", minute: "2-digit" };
+      el.textContent = "Last sync: " + lastSyncTime.toLocaleTimeString(undefined, opts);
     }
 
     async function saveDay(manual = false) {
@@ -537,6 +714,7 @@
         if (manual) {
           console.log("Manual save complete for", currentDateKey);
         }
+        markSynced();
         renderHistoryTable(); // update weekly view after saves
       } catch (err) {
         console.error("Error saving day:", err);
@@ -549,6 +727,7 @@
       autoSaveTimer = setTimeout(() => {
         saveDay(false);
       }, 800); // debounce ~0.8s
+      updateTodayStrip();
     }
 
     async function loadDay(dateKey) {
@@ -569,7 +748,49 @@
       } finally {
         isLoadingDay = false;
       }
+      updateTodayStrip();
+      markSynced();
       renderHistoryTable();
+    }
+
+    function updateWeightChart(labels, weights) {
+      const canvas = document.getElementById("weightChart");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!weightChart) {
+        weightChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels,
+            datasets: [
+              {
+                data: weights,
+                tension: 0.3,
+                fill: false,
+                pointRadius: 2,
+                borderWidth: 2
+              }
+            ]
+          },
+          options: {
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              x: {
+                ticks: { autoSkip: true, maxTicksLimit: 7 }
+              },
+              y: {
+                beginAtZero: false
+              }
+            }
+          }
+        });
+      } else {
+        weightChart.data.labels = labels;
+        weightChart.data.datasets[0].data = weights;
+        weightChart.update();
+      }
     }
 
     async function renderHistoryTable() {
@@ -597,6 +818,9 @@
         }
 
         let hasAny = false;
+        const labels = [];
+        const weights = [];
+
         days.forEach(key => {
           const d = entries[key] || {};
           if (Object.keys(d).length > 0) hasAny = true;
@@ -614,6 +838,11 @@
             row.appendChild(td);
           });
           body.appendChild(row);
+
+          // for weight chart
+          labels.push(key.slice(5)); // MM-DD
+          const w = parseFloat(d.weight);
+          weights.push(isNaN(w) ? null : w);
         });
 
         if (!hasAny) {
@@ -625,6 +854,8 @@
           row.appendChild(td);
           body.appendChild(row);
         }
+
+        updateWeightChart(labels, weights);
       } catch (err) {
         console.error("Error rendering history:", err);
         const row = document.createElement("tr");
@@ -689,6 +920,7 @@
         const el = document.getElementById(id);
         if (el) el.value = "";
       });
+      updateTodayStrip();
       saveDay(true);
     }
 
@@ -714,43 +946,126 @@
       loadDay(currentDateKey);
     }
 
- function initButtons() {
-  const saveBtn = document.getElementById("saveDay");
-  const exportBtn = document.getElementById("exportData");
-  const resetBtn = document.getElementById("resetToday");
-  const hardResetBtn = document.getElementById("hardReset");
-  const prevDayBtn = document.getElementById("prevDay");
-  const nextDayBtn = document.getElementById("nextDay");
+    function updateTodayStrip() {
+      const sleepVal = parseFloat(document.getElementById("sleep")?.value || "0");
+      const caloriesVal = parseFloat(document.getElementById("calories")?.value || "0");
+      const proteinVal = parseFloat(document.getElementById("protein")?.value || "0");
+      const screenVal = parseFloat(document.getElementById("screen")?.value || "0");
+      const disciplineVal = parseFloat(document.getElementById("rateDiscipline")?.value || "0");
+      const focusTextRaw = document.getElementById("trainFocus")?.value || "";
 
-  if (saveBtn) saveBtn.addEventListener("click", () => saveDay(true));
-  if (exportBtn) exportBtn.addEventListener("click", exportData);
-  if (resetBtn) resetBtn.addEventListener("click", resetToday);
-  if (hardResetBtn) hardResetBtn.addEventListener("click", hardReset);
-  if (prevDayBtn) prevDayBtn.addEventListener("click", () => shiftDay(-1));
-  if (nextDayBtn) nextDayBtn.addEventListener("click", () => shiftDay(1));
-}
-  async function exportData() {
-  try {
-    const res = await fetch("/api/export");
-    if (!res.ok) {
-      alert("Error exporting data.");
-      return;
+      const focusEl = document.getElementById("todayFocusText");
+      if (focusEl) {
+        let display = focusTextRaw.replace(/\s+/g, " ").trim();
+        if (!display) display = "Set your training focus for today.";
+        if (display.length > 80) display = display.slice(0, 80) + "…";
+        focusEl.textContent = "Training Focus: " + display;
+      }
+
+      const metricSleep = document.getElementById("metricSleepValue");
+      const metricCalories = document.getElementById("metricCaloriesValue");
+      const metricProtein = document.getElementById("metricProteinValue");
+      const metricScreen = document.getElementById("metricScreenValue");
+      const metricDiscipline = document.getElementById("metricDisciplineValue");
+
+      if (metricSleep) metricSleep.textContent = sleepVal ? `${sleepVal.toFixed(1)} h` : "–";
+      if (metricCalories) metricCalories.textContent = caloriesVal ? `${Math.round(caloriesVal)} kcal` : "–";
+      if (metricProtein) metricProtein.textContent = proteinVal ? `${Math.round(proteinVal)} g` : "–";
+      if (metricScreen) metricScreen.textContent = screenVal ? `${screenVal.toFixed(1)} h` : "–";
+      if (metricDiscipline) metricDiscipline.textContent = disciplineVal || disciplineVal === 0 ? `${disciplineVal || 0}/10` : "–";
+
+      const tagsEl = document.getElementById("todayTags");
+      if (!tagsEl) return;
+      tagsEl.innerHTML = "";
+
+      const tags = [];
+
+      // simple logic for tags
+      if (sleepVal && sleepVal >= 7.5) {
+        tags.push({ type: "good", text: "Rested" });
+      } else if (sleepVal && sleepVal < 7) {
+        tags.push({ type: "warning", text: "Sleep Debt" });
+      }
+
+      if (caloriesVal && caloriesVal > 2500) {
+        tags.push({ type: "warning", text: "Calories High" });
+      } else if (caloriesVal && caloriesVal >= 2100 && caloriesVal <= 2500) {
+        tags.push({ type: "good", text: "Fuel On Target" });
+      }
+
+      if (proteinVal && proteinVal >= 180) {
+        tags.push({ type: "good", text: "Protein Hit" });
+      } else if (proteinVal && proteinVal < 150) {
+        tags.push({ type: "warning", text: "Low Protein" });
+      }
+
+      if (screenVal && screenVal > 4) {
+        tags.push({ type: "bad", text: "High Screen" });
+      } else if (screenVal && screenVal <= 3) {
+        tags.push({ type: "good", text: "Screen Locked" });
+      }
+
+      if (disciplineVal && disciplineVal >= 7) {
+        tags.push({ type: "good", text: "On Track" });
+      } else if (disciplineVal && disciplineVal <= 4) {
+        tags.push({ type: "bad", text: "Discipline Low" });
+      }
+
+      if (tags.length === 0) {
+        tags.push({ type: "", text: "Awaiting data" });
+      }
+
+      tags.forEach(tag => {
+        const span = document.createElement("span");
+        span.classList.add("status-pill");
+        if (tag.type) span.classList.add(tag.type);
+        span.textContent = tag.text;
+        tagsEl.appendChild(span);
+      });
     }
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "ares-entries.json";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  } catch (err) {
-    console.error("Export error:", err);
-    alert("Export failed. Check console for details.");
-  }
-}
 
+    function initButtons() {
+      const saveBtn = document.getElementById("saveDay");
+      const exportBtn = document.getElementById("exportData");
+      const resetBtn = document.getElementById("resetToday");
+      const hardResetBtn = document.getElementById("hardReset");
+      const prevDayBtn = document.getElementById("prevDay");
+      const nextDayBtn = document.getElementById("nextDay");
+      const manualSyncBtn = document.getElementById("manualSync");
+
+      if (saveBtn) saveBtn.addEventListener("click", () => saveDay(true));
+      if (exportBtn) exportBtn.addEventListener("click", exportData);
+      if (resetBtn) resetBtn.addEventListener("click", resetToday);
+      if (hardResetBtn) hardResetBtn.addEventListener("click", hardReset);
+      if (prevDayBtn) prevDayBtn.addEventListener("click", () => shiftDay(-1));
+      if (nextDayBtn) nextDayBtn.addEventListener("click", () => shiftDay(1));
+      if (manualSyncBtn) manualSyncBtn.addEventListener("click", () => {
+        if (!currentDateKey) return;
+        loadDay(currentDateKey);
+      });
+    }
+
+    async function exportData() {
+      try {
+        const res = await fetch("/api/export");
+        if (!res.ok) {
+          alert("Error exporting data.");
+          return;
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "ares-entries.json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error("Export error:", err);
+        alert("Export failed. Check console for details.");
+      }
+    }
 
     function init() {
       currentDate = new Date();
@@ -759,6 +1074,7 @@
       initFields();
       initPills();
       initButtons();
+      updateSyncMessage();
       loadDay(currentDateKey);
     }
 
