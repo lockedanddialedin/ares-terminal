@@ -97,6 +97,8 @@ const STORAGE_PREFIX = "aresTerminal_v1_";
         }
         markSynced();
         renderHistoryTable(); // update weekly view after saves
+        updateHabitStats();   // update habit streaks
+
       } catch (err) {
         console.error("Error saving day:", err);
       }
@@ -151,7 +153,108 @@ const STORAGE_PREFIX = "aresTerminal_v1_";
       updateTodayStrip();
       markSynced();
       renderHistoryTable();
+      updateHabitStats();
+
     }
+    async function updateHabitStats() {
+  // Look back 30 days for streaks & totals
+  const toDate = new Date(currentDate);
+  const fromDate = new Date(currentDate);
+  fromDate.setDate(fromDate.getDate() - 29);
+
+  const fromKey = formatDateKey(fromDate);
+  const toKey = formatDateKey(toDate);
+
+  try {
+    const res = await fetch(
+      `/api/entries/range?from=${encodeURIComponent(fromKey)}&to=${encodeURIComponent(toKey)}`
+    );
+    const json = await res.json();
+    const entries = json.entries || {};
+
+    // Build ordered list of date keys (oldest -> newest)
+    const days = [];
+    const tmp = new Date(fromDate);
+    while (tmp <= toDate) {
+      days.push(formatDateKey(tmp));
+      tmp.setDate(tmp.getDate() + 1);
+    }
+
+    for (let i = 1; i <= 4; i++) {
+      let bestStreak = 0;
+      let running = 0;
+      let totalDone = 0;
+
+      // All-time best over last 30 days
+      days.forEach(dKey => {
+        const d = entries[dKey] || {};
+        const done = d[`habit${i}Done`] === "1";
+        if (done) {
+          running += 1;
+          totalDone += 1;
+          if (running > bestStreak) bestStreak = running;
+        } else {
+          running = 0;
+        }
+      });
+
+      // Current streak from today backwards
+      let currentStreak = 0;
+      const back = new Date(toDate);
+      while (true) {
+        const key = formatDateKey(back);
+        const d = entries[key] || {};
+        const done = d[`habit${i}Done`] === "1";
+        if (done) {
+          currentStreak += 1;
+          back.setDate(back.getDate() - 1);
+          // stop if we walked past the range
+          if (back < fromDate) break;
+        } else {
+          break;
+        }
+      }
+
+      // Update text
+      const streakEl = document.getElementById(`habit${i}Streak`);
+      const bestEl = document.getElementById(`habit${i}Best`);
+      const totalEl = document.getElementById(`habit${i}Total`);
+      if (streakEl) streakEl.textContent = currentStreak;
+      if (bestEl) bestEl.textContent = bestStreak;
+      if (totalEl) totalEl.textContent = totalDone;
+
+      // Weekly dots (last 7 days)
+      const weekEl = document.getElementById(`habit${i}Week`);
+      if (weekEl) {
+        weekEl.innerHTML = "";
+        const weeklyStart = new Date(toDate);
+        weeklyStart.setDate(weeklyStart.getDate() - 6);
+        const weekDays = [];
+        const t = new Date(weeklyStart);
+        while (t <= toDate) {
+          weekDays.push(formatDateKey(t));
+          t.setDate(t.getDate() + 1);
+        }
+
+        weekDays.forEach((key, idx) => {
+          const d = entries[key] || {};
+          const done = d[`habit${i}Done`] === "1";
+
+          const dot = document.createElement("div");
+          dot.classList.add("habit-dot");
+          dot.classList.add(done ? "done" : "miss");
+          if (idx === weekDays.length - 1) {
+            dot.classList.add("today-outline");
+          }
+          dot.title = `${key}: ${done ? "Done" : "Missed"}`;
+          weekEl.appendChild(dot);
+        });
+      }
+    }
+  } catch (err) {
+    console.error("Error updating habit stats:", err);
+  }
+}
 
     function updateWeightChart(labels, weights) {
       const canvas = document.getElementById("weightChart");
@@ -519,6 +622,8 @@ const STORAGE_PREFIX = "aresTerminal_v1_";
       initButtons();
       updateSyncMessage();
       loadDay(currentDateKey);
+      updateHabitStats();
+
     }
 
     document.addEventListener("DOMContentLoaded", init);

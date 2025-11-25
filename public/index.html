@@ -222,7 +222,7 @@
       </div>
     </section>
 
-    <!-- Habit Tracker -->
+        <!-- Habit Tracker -->
     <section class="card">
       <div class="card-title-row">
         <h2>Habit Tracker</h2>
@@ -230,59 +230,107 @@
       </div>
 
       <p class="section-label">Daily Habits</p>
+      <p class="today-subtitle" style="margin-bottom:10px;">
+        Name the habit once. Toggle "Done today" each night. Ares tracks streaks, best run, and weekly consistency.
+      </p>
 
-      <div class="habit-row">
-        <input
-          id="habit1Name"
-          class="habit-name"
-          type="text"
-          placeholder="Habit 1 label (e.g. No phone in bed)"
-        />
-        <label class="habit-check-label">
-          <input id="habit1Done" type="checkbox" />
-          <span>Done</span>
-        </label>
+      <!-- Habit 1 -->
+      <div class="habit-row-outer">
+        <div class="habit-main">
+          <input
+            id="habit1Name"
+            class="habit-name"
+            type="text"
+            placeholder="Habit 1 label (e.g. No phone in bed)"
+          />
+          <label class="habit-toggle">
+            <input id="habit1Done" type="checkbox" />
+            <span class="habit-toggle-pill">Done today</span>
+          </label>
+        </div>
+        <div class="habit-meta">
+          <div class="habit-stats-text">
+            <span id="habit1Streak">0</span>d streak • best
+            <span id="habit1Best">0</span>d •
+            <span id="habit1Total">0</span>x total
+          </div>
+          <div class="habit-week" id="habit1Week"></div>
+        </div>
       </div>
 
-      <div class="habit-row">
-        <input
-          id="habit2Name"
-          class="habit-name"
-          type="text"
-          placeholder="Habit 2 label (e.g. No scrolling after 10pm)"
-        />
-        <label class="habit-check-label">
-          <input id="habit2Done" type="checkbox" />
-          <span>Done</span>
-        </label>
+      <!-- Habit 2 -->
+      <div class="habit-row-outer">
+        <div class="habit-main">
+          <input
+            id="habit2Name"
+            class="habit-name"
+            type="text"
+            placeholder="Habit 2 label (e.g. No scrolling after 10pm)"
+          />
+          <label class="habit-toggle">
+            <input id="habit2Done" type="checkbox" />
+            <span class="habit-toggle-pill">Done today</span>
+          </label>
+        </div>
+        <div class="habit-meta">
+          <div class="habit-stats-text">
+            <span id="habit2Streak">0</span>d streak • best
+            <span id="habit2Best">0</span>d •
+            <span id="habit2Total">0</span>x total
+          </div>
+          <div class="habit-week" id="habit2Week"></div>
+        </div>
       </div>
 
-      <div class="habit-row">
-        <input
-          id="habit3Name"
-          class="habit-name"
-          type="text"
-          placeholder="Habit 3 label (e.g. Hit protein target)"
-        />
-        <label class="habit-check-label">
-          <input id="habit3Done" type="checkbox" />
-          <span>Done</span>
-        </label>
+      <!-- Habit 3 -->
+      <div class="habit-row-outer">
+        <div class="habit-main">
+          <input
+            id="habit3Name"
+            class="habit-name"
+            type="text"
+            placeholder="Habit 3 label (e.g. Hit protein target)"
+          />
+          <label class="habit-toggle">
+            <input id="habit3Done" type="checkbox" />
+            <span class="habit-toggle-pill">Done today</span>
+          </label>
+        </div>
+        <div class="habit-meta">
+          <div class="habit-stats-text">
+            <span id="habit3Streak">0</span>d streak • best
+            <span id="habit3Best">0</span>d •
+            <span id="habit3Total">0</span>x total
+          </div>
+          <div class="habit-week" id="habit3Week"></div>
+        </div>
       </div>
 
-      <div class="habit-row">
-        <input
-          id="habit4Name"
-          class="habit-name"
-          type="text"
-          placeholder="Habit 4 label (e.g. Walk after dinner)"
-        />
-        <label class="habit-check-label">
-          <input id="habit4Done" type="checkbox" />
-          <span>Done</span>
-        </label>
+      <!-- Habit 4 -->
+      <div class="habit-row-outer">
+        <div class="habit-main">
+          <input
+            id="habit4Name"
+            class="habit-name"
+            type="text"
+            placeholder="Habit 4 label (e.g. Walk after dinner)"
+          />
+          <label class="habit-toggle">
+            <input id="habit4Done" type="checkbox" />
+            <span class="habit-toggle-pill">Done today</span>
+          </label>
+        </div>
+        <div class="habit-meta">
+          <div class="habit-stats-text">
+            <span id="habit4Streak">0</span>d streak • best
+            <span id="habit4Best">0</span>d •
+            <span id="habit4Total">0</span>x total
+          </div>
+          <div class="habit-week" id="habit4Week"></div>
+        </div>
       </div>
     </section>
+
 
     <!-- Column: History & Weekly View -->
     <section class="card">
