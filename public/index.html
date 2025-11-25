@@ -354,6 +354,36 @@
       font-size: 0.7rem;
     }
 
+    /* Habit Tracker */
+    .habit-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .habit-name {
+      flex: 1;
+      margin-bottom: 0;
+    }
+    .habit-check-label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.8rem;
+      color: #e5e7eb;
+      white-space: nowrap;
+    }
+    .habit-check-label input {
+      width: auto;
+      margin-bottom: 0;
+    }
+    .habit-stats {
+      font-size: 0.7rem;
+      color: #9ca3af;
+      margin-bottom: 4px;
+      margin-left: 2px;
+    }
+
     @media (max-width: 700px) {
       .top-row {
         flex-direction: column;
@@ -394,7 +424,7 @@
       Discipline is the default. You input the data. I show you whether your actions match the athlete you say you want to be.
       Use this terminal every morning and night:
       <br /><br />
-      • Morning: Set your training focus, non-negotiables, and schedule.<br />
+      • Morning: Set your training focus and schedule.<br />
       • Night: Log what actually happened. Rate yourself. Adjust tomorrow.
     </div>
   </section>
@@ -547,15 +577,6 @@
       <p class="section-label">Training Notes</p>
       <textarea id="trainingNotes" placeholder="Top sets, volume, speed work, how the body felt, anything to adjust tomorrow."></textarea>
 
-      <p class="section-label">Non-Negotiables (Today)</p>
-      <div class="pill-row" data-group="nonneg">
-        <div class="pill" data-value="No phone in bed">No phone in bed</div>
-        <div class="pill" data-value="No scrolling after 10pm">No scrolling after 10pm</div>
-        <div class="pill" data-value="Hit protein target">Hit protein target</div>
-        <div class="pill" data-value="Stretch 10 min">Stretch 10 min</div>
-        <div class="pill" data-value="Walk after dinner">Walk after dinner</div>
-      </div>
-
       <p class="section-label">Execution Rules</p>
       <div class="pill-row" data-group="rules">
         <div class="pill" data-value="No skipped warmup">No skipped warmup</div>
@@ -578,15 +599,6 @@
       <p class="section-label">Top 3 for Today</p>
       <textarea id="top3" placeholder="1) &#10;2) &#10;3)"></textarea>
 
-      <p class="section-label">Lifestyle / Discipline</p>
-      <div class="pill-row" data-group="lifestyle">
-        <div class="pill" data-value="Phone under control">Phone under control</div>
-        <div class="pill" data-value="Ate like athlete">Ate like athlete</div>
-        <div class="pill" data-value="Sleep dialed">Sleep dialed</div>
-        <div class="pill" data-value="No junk dopamine">No junk dopamine</div>
-        <div class="pill" data-value="Tasks done">Tasks done</div>
-      </div>
-
       <p class="section-label">Night Audit</p>
       <textarea id="audit" placeholder="What was a win? What was sloppy? What do you fix tomorrow? Did you live like the athlete you claim to be?"></textarea>
 
@@ -601,6 +613,72 @@
           <input id="rateFocus" type="number" min="0" max="10" step="1" placeholder="0–10" />
         </div>
       </div>
+    </section>
+
+    <!-- Habit Tracker -->
+    <section class="card">
+      <div class="card-title-row">
+        <h2>Habit Tracker</h2>
+        <span class="card-tag">Discipline</span>
+      </div>
+
+      <p class="section-label">Daily Habits</p>
+
+      <div class="habit-row">
+        <input
+          id="habit1Name"
+          class="habit-name"
+          type="text"
+          placeholder="Habit 1 label (e.g. Creatine)"
+        />
+        <label class="habit-check-label">
+          <input id="habit1Done" type="checkbox" />
+          <span>Done</span>
+        </label>
+      </div>
+      <div id="habit1Stats" class="habit-stats">Streak: 0 • Total: 0</div>
+
+      <div class="habit-row">
+        <input
+          id="habit2Name"
+          class="habit-name"
+          type="text"
+          placeholder="Habit 2 label (e.g. No phone in bed)"
+        />
+        <label class="habit-check-label">
+          <input id="habit2Done" type="checkbox" />
+          <span>Done</span>
+        </label>
+      </div>
+      <div id="habit2Stats" class="habit-stats">Streak: 0 • Total: 0</div>
+
+      <div class="habit-row">
+        <input
+          id="habit3Name"
+          class="habit-name"
+          type="text"
+          placeholder="Habit 3 label (e.g. Walk after dinner)"
+        />
+        <label class="habit-check-label">
+          <input id="habit3Done" type="checkbox" />
+          <span>Done</span>
+        </label>
+      </div>
+      <div id="habit3Stats" class="habit-stats">Streak: 0 • Total: 0</div>
+
+      <div class="habit-row">
+        <input
+          id="habit4Name"
+          class="habit-name"
+          type="text"
+          placeholder="Habit 4 label"
+        />
+        <label class="habit-check-label">
+          <input id="habit4Done" type="checkbox" />
+          <span>Done</span>
+        </label>
+      </div>
+      <div id="habit4Stats" class="habit-stats">Streak: 0 • Total: 0</div>
     </section>
 
     <!-- Column: History & Weekly View -->
@@ -644,8 +722,11 @@
       "mood","screen","vitalNotes",
       "trainFocus","acadBlock","trainingNotes",
       "top3","audit",
-      "rateDiscipline","rateFocus"
+      "rateDiscipline","rateFocus",
+      "habit1Done","habit2Done","habit3Done","habit4Done"
     ];
+
+    const HABIT_DONE_IDS = ["habit1Done","habit2Done","habit3Done","habit4Done"];
 
     let currentDate = new Date();
     let currentDateKey = null;
@@ -678,8 +759,27 @@
       const data = {};
       FIELD_IDS.forEach(id => {
         const el = document.getElementById(id);
-        if (el) data[id] = el.value;
+        if (!el) return;
+        if (el.type === "checkbox") {
+          data[id] = el.checked ? "1" : "0";
+        } else {
+          data[id] = el.value;
+        }
       });
+
+      // per-day session type & execution grade
+      const sessionRow = document.querySelector('.pill-row[data-group="sessionType"]');
+      if (sessionRow) {
+        const active = sessionRow.querySelector('.pill.active');
+        data.sessionType = active ? active.getAttribute("data-value") : "";
+      }
+
+      const execRow = document.querySelector('.pill-row[data-group="execution"]');
+      if (execRow) {
+        const active = execRow.querySelector('.pill.active');
+        data.executionGrade = active ? active.getAttribute("data-value") : "";
+      }
+
       return data;
     }
 
@@ -716,6 +816,7 @@
         }
         markSynced();
         renderHistoryTable(); // update weekly view after saves
+        updateHabitStats();   // update streaks / totals
       } catch (err) {
         console.error("Error saving day:", err);
       }
@@ -726,8 +827,17 @@
       if (autoSaveTimer) clearTimeout(autoSaveTimer);
       autoSaveTimer = setTimeout(() => {
         saveDay(false);
-      }, 800); // debounce ~0.8s
+      }, 800);
       updateTodayStrip();
+    }
+
+    function applySingleSelectPill(group, value) {
+      const row = document.querySelector(`.pill-row[data-group="${group}"]`);
+      if (!row) return;
+      const pills = row.querySelectorAll(".pill");
+      pills.forEach(p => {
+        p.classList.toggle("active", !!value && p.getAttribute("data-value") === value);
+      });
     }
 
     async function loadDay(dateKey) {
@@ -739,10 +849,19 @@
         }
         const json = await res.json().catch(() => ({}));
         const data = json && json.data ? json.data : {};
+
         FIELD_IDS.forEach(id => {
           const el = document.getElementById(id);
-          if (el) el.value = data[id] ?? "";
+          if (!el) return;
+          if (el.type === "checkbox") {
+            el.checked = (data[id] || "0") === "1";
+          } else {
+            el.value = data[id] ?? "";
+          }
         });
+
+        applySingleSelectPill("sessionType", data.sessionType || "");
+        applySingleSelectPill("execution", data.executionGrade || "");
       } catch (err) {
         console.error("Error loading day:", err);
       } finally {
@@ -751,6 +870,7 @@
       updateTodayStrip();
       markSynced();
       renderHistoryTable();
+      updateHabitStats();
     }
 
     function updateWeightChart(labels, weights) {
@@ -839,7 +959,6 @@
           });
           body.appendChild(row);
 
-          // for weight chart
           labels.push(key.slice(5)); // MM-DD
           const w = parseFloat(d.weight);
           weights.push(isNaN(w) ? null : w);
@@ -882,44 +1001,87 @@
 
     function initPills() {
       document.querySelectorAll(".pill-row").forEach(row => {
-        const group = row.getAttribute("data-group");
+        const group = row.getAttribute("data-group") || "";
         const pills = row.querySelectorAll(".pill");
-        const key = storageKey("pill_" + group);
-        const saved = localStorage.getItem(key);
-        if (saved) {
-          const values = saved.split("||");
-          pills.forEach(p => {
-            if (values.includes(p.getAttribute("data-value"))) {
-              p.classList.add("active");
-            }
-          });
+
+        const isSingleSelect = group === "execution" || group === "sessionType";
+        const persists = !isSingleSelect;
+
+        let key;
+        if (persists) {
+          key = storageKey("pill_" + group);
+          const saved = localStorage.getItem(key);
+          if (saved) {
+            const values = saved.split("||");
+            pills.forEach(p => {
+              if (values.includes(p.getAttribute("data-value"))) {
+                p.classList.add("active");
+              }
+            });
+          }
         }
+
         row.addEventListener("click", e => {
           const pill = e.target.closest(".pill");
           if (!pill) return;
 
-          if (group === "execution" || group === "sessionType") {
-            pills.forEach(p => p.classList.remove("active"));
-            pill.classList.add("active");
+          if (isSingleSelect) {
+            const alreadyActive = pill.classList.contains("active");
+            if (alreadyActive) {
+              pill.classList.remove("active");
+            } else {
+              pills.forEach(p => p.classList.remove("active"));
+              pill.classList.add("active");
+            }
           } else {
             pill.classList.toggle("active");
           }
 
-          const activeValues = Array.from(pills)
-            .filter(p => p.classList.contains("active"))
-            .map(p => p.getAttribute("data-value"));
-          localStorage.setItem(key, activeValues.join("||"));
+          if (persists && key) {
+            const activeValues = Array.from(pills)
+              .filter(p => p.classList.contains("active"))
+              .map(p => p.getAttribute("data-value"));
+            localStorage.setItem(key, activeValues.join("||"));
+          }
+
+          scheduleAutoSave();
         });
       });
+    }
+
+    function initHabits() {
+      for (let i = 1; i <= 4; i++) {
+        const nameInput = document.getElementById(`habit${i}Name`);
+        if (!nameInput) continue;
+        const key = storageKey(`habitName${i}`);
+        const saved = localStorage.getItem(key);
+        if (saved) {
+          nameInput.value = saved;
+        }
+        nameInput.addEventListener("input", () => {
+          localStorage.setItem(key, nameInput.value.trim());
+        });
+      }
     }
 
     function resetToday() {
       const confirmReset = confirm("Reset fields for this day? This will clear entries for this date.");
       if (!confirmReset) return;
+
       FIELD_IDS.forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.value = "";
+        if (!el) return;
+        if (el.type === "checkbox") {
+          el.checked = false;
+        } else {
+          el.value = "";
+        }
       });
+
+      document
+        .querySelectorAll('[data-group="sessionType"] .pill, [data-group="execution"] .pill')
+        .forEach(p => p.classList.remove("active"));
+
       updateTodayStrip();
       saveDay(true);
     }
@@ -937,13 +1099,12 @@
       window.location.reload();
     }
 
-    function shiftDay(delta) {
-      // Optionally save current day before switching
-      saveDay(false);
+    async function shiftDay(delta) {
+      await saveDay(false);
       currentDate.setDate(currentDate.getDate() + delta);
       currentDateKey = formatDateKey(currentDate);
       updateDateDisplay();
-      loadDay(currentDateKey);
+      await loadDay(currentDateKey);
     }
 
     function updateTodayStrip() {
@@ -972,7 +1133,7 @@
       if (metricCalories) metricCalories.textContent = caloriesVal ? `${Math.round(caloriesVal)} kcal` : "–";
       if (metricProtein) metricProtein.textContent = proteinVal ? `${Math.round(proteinVal)} g` : "–";
       if (metricScreen) metricScreen.textContent = screenVal ? `${screenVal.toFixed(1)} h` : "–";
-      if (metricDiscipline) metricDiscipline.textContent = disciplineVal || disciplineVal === 0 ? `${disciplineVal || 0}/10` : "–";
+      if (metricDiscipline) metricDiscipline.textContent = (disciplineVal || disciplineVal === 0) ? `${disciplineVal || 0}/10` : "–";
 
       const tagsEl = document.getElementById("todayTags");
       if (!tagsEl) return;
@@ -980,7 +1141,6 @@
 
       const tags = [];
 
-      // simple logic for tags
       if (sleepVal && sleepVal >= 7.5) {
         tags.push({ type: "good", text: "Rested" });
       } else if (sleepVal && sleepVal < 7) {
@@ -1067,18 +1227,72 @@
       }
     }
 
-    function init() {
+    async function updateHabitStats() {
+      const today = new Date();
+      const toKey = formatDateKey(today);
+      const fromDate = new Date("2000-01-01");
+      const fromKey = formatDateKey(fromDate);
+
+      const stats = {};
+      HABIT_DONE_IDS.forEach(id => {
+        stats[id] = { currentStreak: 0, longestStreak: 0, total: 0 };
+      });
+
+      try {
+        const res = await fetch(`/api/entries/range?from=${encodeURIComponent(fromKey)}&to=${encodeURIComponent(toKey)}`);
+        const json = await res.json();
+        const entries = json.entries || {};
+
+        const d = new Date(fromDate);
+        while (d <= today) {
+          const key = formatDateKey(d);
+          const dayData = entries[key] || {};
+
+          HABIT_DONE_IDS.forEach(id => {
+            const s = stats[id];
+            const done = (dayData[id] || "0") === "1";
+            if (done) {
+              s.total += 1;
+              s.currentStreak += 1;
+              if (s.currentStreak > s.longestStreak) {
+                s.longestStreak = s.currentStreak;
+              }
+            } else {
+              s.currentStreak = 0;
+            }
+          });
+
+          d.setDate(d.getDate() + 1);
+        }
+
+        // update UI
+        for (let i = 1; i <= 4; i++) {
+          const id = `habit${i}Done`;
+          const stat = stats[id];
+          const el = document.getElementById(`habit${i}Stats`);
+          if (!el) continue;
+          el.textContent = `Streak: ${stat.currentStreak} • Total: ${stat.total}`;
+        }
+      } catch (err) {
+        console.error("Error updating habit stats:", err);
+      }
+    }
+
+    async function init() {
       currentDate = new Date();
       currentDateKey = formatDateKey(currentDate);
       updateDateDisplay();
       initFields();
       initPills();
+      initHabits();
       initButtons();
       updateSyncMessage();
-      loadDay(currentDateKey);
+      await loadDay(currentDateKey);
     }
 
-    document.addEventListener("DOMContentLoaded", init);
+    document.addEventListener("DOMContentLoaded", () => {
+      init();
+    });
   </script>
 </body>
 </html>
