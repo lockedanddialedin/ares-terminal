@@ -14,13 +14,16 @@ function getDefaultSettings() {
 }
 
     const FIELD_IDS = [
-      "weight","sleep","energy","calories","protein","steps","water",
-      "mood","screen","vitalNotes",
-      "trainFocus","acadBlock","trainingNotes",
-      "top3","audit",
-      "rateDiscipline","rateFocus",
-      "habit1Done","habit2Done","habit3Done","habit4Done"
-    ];
+  "weight","sleep","energy",
+  "calories","protein","carbs","fats",
+  "steps","water",
+  "mood","screen","vitalNotes",
+  "trainFocus","acadBlock","trainingNotes",
+  "top3","audit",
+  "rateDiscipline","rateFocus",
+  "habit1Done","habit2Done","habit3Done","habit4Done"
+];
+
 
     let currentDate = new Date();
     let currentDateKey = null;
