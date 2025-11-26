@@ -19,7 +19,7 @@ router.post("/ares-chat", async (req, res) => {
     }
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-5.1-mini",
+      model: "gpt-4o-mini",
       messages,
       max_tokens: 350,
     });
