@@ -1,4 +1,5 @@
-require("dotenv").config();
+// server.js
+require("dotenv").config(); // <-- load .env FIRST
 
 const express = require("express");
 const path = require("path");
@@ -6,6 +7,7 @@ const path = require("path");
 const initDb = require("./db/init");
 const entriesRouter = require("./routes/entries");
 const exportRouter = require("./routes/export");
+const aresChatRoute = require("./routes/aresChat"); // <-- use require, not import
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,6 +22,7 @@ app.use(express.static(PUBLIC_DIR));
 initDb();
 
 // API routes
+app.use("/api", aresChatRoute);       // <-- /api/ares-chat lives here
 app.use("/api/entries", entriesRouter);
 app.use("/api/export", exportRouter);
 

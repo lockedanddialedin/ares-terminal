@@ -233,6 +233,32 @@
         </div>
       </div>
     </section>
+    <section class="panel">
+  <div class="panel-header">
+    <h2>Ares AI Console</h2>
+    <span class="subtext">terminal chat</span>
+  </div>
+
+  <div class="terminal-chat">
+    <div class="terminal-output" id="terminalOutput">
+      <div class="terminal-line system-line">
+        Ares online. Feed me data or ask a question.
+      </div>
+    </div>
+
+    <form id="terminalForm" class="terminal-input-row">
+      <span class="prompt-label">YOU &gt;</span>
+      <input
+        id="terminalInput"
+        type="text"
+        autocomplete="off"
+        placeholder="Ask Ares anything about your day, training, or data..."
+      />
+      <button type="submit">Send</button>
+    </form>
+  </div>
+</section>
+
     <!-- Settings / Targets -->
     <section class="card">
       <div class="card-title-row">
@@ -420,6 +446,75 @@
 
     <script src="/js/main.js"></script>
     <div id="toastContainer" class="toast-container"></div>
+    <script>
+  // Basic in-page chat history
+  const chatHistory = [
+    {
+      role: "system",
+      content:
+        "You are Ares, a disciplined performance coach AI. Keep answers concise unless asked for deep dives. Use the data the user tracks (sleep, training, nutrition, screen time, habits, weight, etc.) to coach them like an elite athlete."
+    }
+  ];
+
+  const terminalForm = document.getElementById("terminalForm");
+  const terminalInput = document.getElementById("terminalInput");
+  const terminalOutput = document.getElementById("terminalOutput");
+
+  function appendLine(text, type) {
+    const line = document.createElement("div");
+    line.classList.add("terminal-line");
+
+    if (type === "user") line.classList.add("user-line");
+    if (type === "ares") line.classList.add("ares-line");
+    if (type === "system") line.classList.add("system-line");
+
+    line.textContent = text;
+    terminalOutput.appendChild(line);
+    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+  }
+
+  terminalForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const input = terminalInput.value.trim();
+    if (!input) return;
+
+    // Show user line
+    appendLine(input, "user");
+    chatHistory.push({ role: "user", content: input });
+    terminalInput.value = "";
+
+    // Show temporary "thinking" line
+    const thinkingLine = document.createElement("div");
+    thinkingLine.classList.add("terminal-line", "ares-line");
+    thinkingLine.textContent = "…thinking";
+    terminalOutput.appendChild(thinkingLine);
+    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+
+    try {
+      // Call your backend API route that talks to OpenAI
+      const res = await fetch("/api/ares-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: chatHistory })
+      });
+
+      if (!res.ok) {
+        throw new Error("API error");
+      }
+
+      const data = await res.json();
+      const reply = data.reply || "I hit an error processing that.";
+
+      // replace thinking line
+      thinkingLine.textContent = reply;
+      chatHistory.push({ role: "assistant", content: reply });
+    } catch (err) {
+      thinkingLine.textContent =
+        "Error talking to Ares API. Check /api/ares-chat on the server.";
+    }
+  });
+</script>
+
 
 </body>
 </html>

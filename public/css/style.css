@@ -637,3 +637,88 @@
   font-size: 0.8rem;
   opacity: 0.8;
 }
+.terminal-chat {
+  background: #020617;
+  border-radius: 14px;
+  border: 1px solid #1f2937;
+  padding: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 320px;
+}
+
+.terminal-output {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.terminal-line {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin-bottom: 4px;
+}
+
+.system-line {
+  color: #38bdf8;
+}
+
+.user-line::before {
+  content: "YOU > ";
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.ares-line::before {
+  content: "ARES > ";
+  color: #f97316;
+  font-weight: 600;
+}
+
+.terminal-input-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-top: 1px solid #111827;
+  padding-top: 6px;
+}
+
+.prompt-label {
+  font-size: 0.75rem;
+  color: #22c55e;
+  font-weight: 600;
+}
+
+#terminalInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #1f2937;
+  padding: 4px 2px;
+  color: #e5e7eb;
+  font-family: inherit;
+  font-size: 0.8rem;
+}
+
+#terminalInput:focus {
+  outline: none;
+  border-color: #38bdf8;
+}
+
+#terminalForm button {
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #1f2937;
+  background: #0f172a;
+  color: #e5e7eb;
+  cursor: pointer;
+}
+
+#terminalForm button:hover {
+  background: #1f2937;
+}
