@@ -448,13 +448,12 @@
     <div id="toastContainer" class="toast-container"></div>
     <script>
   // Basic in-page chat history
-  const chatHistory = [
-    {
-      role: "system",
-      content:
-        "You are Ares, a disciplined performance coach AI. Keep answers concise unless asked for deep dives. Use the data the user tracks (sleep, training, nutrition, screen time, habits, weight, etc.) to coach them like an elite athlete."
-    }
-  ];
+  // Basic in-page chat history.
+// THE PROGRAM persona is now defined in the backend (aresChat.js),
+// so we only track user/assistant messages here.
+const chatHistory = [];
+
+
 
   const terminalForm = document.getElementById("terminalForm");
   const terminalInput = document.getElementById("terminalInput");

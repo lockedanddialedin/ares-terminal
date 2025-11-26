@@ -256,39 +256,43 @@ function getSettings() {
     }
 
     async function loadDay(dateKey) {
-      isLoadingDay = true;
-      try {
-        const res = await fetch(`/api/entries?date=${encodeURIComponent(dateKey)}`);
-        if (!res.ok) {
-          console.warn("No entry yet for", dateKey);
-        }
-        const json = await res.json().catch(() => ({}));
-        const data = json && json.data ? json.data : {};
-
-        FIELD_IDS.forEach(id => {
-          const el = document.getElementById(id);
-          if (!el) return;
-          if (el.type === "checkbox") {
-            el.checked = (data[id] || "0") === "1";
-          } else {
-            el.value = data[id] ?? "";
-          }
-        });
-
-        // per-day session type & execution grade
-        applySingleSelectPill("sessionType", data.sessionType || "");
-        applySingleSelectPill("execution", data.executionGrade || "");
-      } catch (err) {
-        console.error("Error loading day:", err);
-      } finally {
-        isLoadingDay = false;
-      }
-      updateTodayStrip();
-      markSynced();
-      renderHistoryTable();
-      updateHabitStats();
-
+  isLoadingDay = true;
+  try {
+    const res = await fetch(`/api/entries?date=${encodeURIComponent(dateKey)}`);
+    if (!res.ok) {
+      console.warn("No entry yet for", dateKey);
     }
+    const json = await res.json().catch(() => ({}));
+    const data = json && json.data ? json.data : {};
+
+    // 🔥 Make today’s entry available globally for THE PROGRAM
+    window.currentAresEntry = data;
+
+    FIELD_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el.type === "checkbox") {
+        el.checked = (data[id] || "0") === "1";
+      } else {
+        el.value = data[id] ?? "";
+      }
+    });
+
+    applySingleSelectPill("sessionType", data.sessionType || "");
+    applySingleSelectPill("execution", data.executionGrade || "");
+  } catch (err) {
+    console.error("Error loading day:", err);
+    // In case of error, at least clear the global entry
+    window.currentAresEntry = null;
+  } finally {
+    isLoadingDay = false;
+  }
+  updateTodayStrip();
+  markSynced();
+  renderHistoryTable();
+  updateHabitStats();
+}
+
     async function updateHabitStats() {
   // Look back 30 days for streaks & totals
   const toDate = new Date(currentDate);
