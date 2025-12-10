@@ -492,10 +492,14 @@ const chatHistory = [];
     try {
       // Call your backend API route that talks to OpenAI
       const res = await fetch("/api/ares-chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: chatHistory })
-      });
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    messages: chatHistory,
+    entry: window.currentAresEntry || null
+  })
+});
+
 
       if (!res.ok) {
         throw new Error("API error");
