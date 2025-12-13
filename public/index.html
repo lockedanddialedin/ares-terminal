@@ -4,20 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ares Terminal</title>
-    <link rel="stylesheet" href="/css/style.css" />
-
+  <link rel="stylesheet" href="/css/style.css" />
 </head>
+
 <body>
   <header class="top-row">
     <div>
       <h1>Ares Terminal</h1>
-      <p class="subtitle">Laptop Control Panel — Training, Discipline, and Daily Systems</p>
+      <p class="subtitle">Simple Daily Log — low friction, high consistency</p>
       <div class="date-nav">
         <button class="ghost-btn" id="prevDay">&larr;</button>
         <p class="date" id="currentDate">Loading date…</p>
         <button class="ghost-btn" id="nextDay">&rarr;</button>
       </div>
     </div>
+
     <div class="top-actions">
       <button id="saveDay">Save Day</button>
       <button id="exportData">Export Data</button>
@@ -26,71 +27,12 @@
     </div>
   </header>
 
-  <section style="margin-bottom: 12px;">
-    <div class="ares-mode">
-      <span class="ares-highlight">Ares Mode</span>
-      Discipline is the default. You input the data. I show you whether your actions match the athlete you say you want to be.
-      Use this terminal every morning and night:
-      <br /><br />
-      • Morning: Set your training focus, non-negotiables, and schedule.<br />
-      • Night: Log what actually happened. Rate yourself. Adjust tomorrow.
-    </div>
-  </section>
-
-  <!-- TODAY AT A GLANCE + SYNC -->
-  <section class="card today-strip-card dashboard-top-card">
-    <div class="today-header">
-      <div>
-        <h2>Today at a Glance</h2>
-        <p class="today-subtitle">Instant read on sleep, fuel, and discipline for the day.</p>
-      </div>
-      <div class="sync-status">
-        <span id="syncMessage">Last sync: --</span>
-        <button id="manualSync" class="ghost-btn">Sync Now</button>
-      </div>
-    </div>
-    <div class="today-strip">
-      <div class="today-main">
-        <p class="today-date" id="todayDateText">–</p>
-        <p class="today-focus" id="todayFocusText">Set your training focus for today.</p>
-      </div>
-      <div class="today-metrics">
-        <div class="today-metric">
-          <div class="today-metric-label">Sleep</div>
-          <div class="today-metric-value" id="metricSleepValue">–</div>
-          <div class="today-metric-sub">Target ~8h</div>
-        </div>
-        <div class="today-metric">
-          <div class="today-metric-label">Calories</div>
-          <div class="today-metric-value" id="metricCaloriesValue">–</div>
-          <div class="today-metric-sub">2300 target (edit later)</div>
-        </div>
-        <div class="today-metric">
-          <div class="today-metric-label">Protein</div>
-          <div class="today-metric-value" id="metricProteinValue">–</div>
-          <div class="today-metric-sub">190g target (edit later)</div>
-        </div>
-        <div class="today-metric">
-          <div class="today-metric-label">Screen</div>
-          <div class="today-metric-value" id="metricScreenValue">–</div>
-          <div class="today-metric-sub">&le; 3h goal</div>
-        </div>
-        <div class="today-metric">
-          <div class="today-metric-label">Discipline</div>
-          <div class="today-metric-value" id="metricDisciplineValue">–</div>
-          <div class="today-metric-sub">Self-rated</div>
-        </div>
-      </div>
-    </div>
-    <div class="today-tags" id="todayTags"></div>
-  </section>
-
-  <main class="grid">
-    <!-- Column 1: Vitals -->
+  <main class="grid grid-2">
+    <!-- Vitals & Intake (kept) -->
     <section class="card">
       <div class="card-title-row">
         <h2>Vitals & Intake</h2>
-        <span class="card-tag">FOOT / FUEL</span>
+        <span class="card-tag">DAILY</span>
       </div>
 
       <div class="tiny-row">
@@ -109,26 +51,26 @@
       </div>
 
       <div class="small-row">
-  <div>
-    <label for="calories">Calories</label>
-    <input id="calories" type="number" step="1" placeholder="e.g. 2300" />
-  </div>
-  <div>
-    <label for="protein">Protein (g)</label>
-    <input id="protein" type="number" step="1" placeholder="e.g. 190" />
-  </div>
-</div>
+        <div>
+          <label for="calories">Calories</label>
+          <input id="calories" type="number" step="1" placeholder="e.g. 2300" />
+        </div>
+        <div>
+          <label for="protein">Protein (g)</label>
+          <input id="protein" type="number" step="1" placeholder="e.g. 190" />
+        </div>
+      </div>
 
-<div class="small-row">
-  <div>
-    <label for="carbs">Carbs (g)</label>
-    <input id="carbs" type="number" step="1" placeholder="e.g. 200" />
-  </div>
-  <div>
-    <label for="fats">Fats (g)</label>
-    <input id="fats" type="number" step="1" placeholder="e.g. 60" />
-  </div>
-</div>
+      <div class="small-row">
+        <div>
+          <label for="carbs">Carbs (g)</label>
+          <input id="carbs" type="number" step="1" placeholder="e.g. 200" />
+        </div>
+        <div>
+          <label for="fats">Fats (g)</label>
+          <input id="fats" type="number" step="1" placeholder="e.g. 60" />
+        </div>
+      </div>
 
       <div class="small-row">
         <div>
@@ -153,270 +95,31 @@
         </div>
       </div>
 
-      <p class="section-label">Notes</p>
-      <textarea id="vitalNotes" placeholder="Bloat, digestion, cravings, soreness, meds/supps, anything notable."></textarea>
+      <p class="section-label">Trained Today?</p>
+      <div class="trained-row">
+        <label class="habit-toggle">
+          <input id="trained" type="checkbox" />
+          <span class="habit-toggle-pill">Trained</span>
+        </label>
 
-      <p class="section-label">Status Strip</p>
-      <div class="status-strip">
-        <span class="status-pill good">On target</span>
-        <span class="status-pill warning">Calories high?</span>
-        <span class="status-pill bad">Sleep debt?</span>
-      </div>
-    </section>
-
-    <!-- Column 2: Training & Execution -->
-    <section class="card">
-      <div class="card-title-row">
-        <h2>Training & Execution</h2>
-        <span class="card-tag">FOOT / IRON</span>
-      </div>
-
-      <p class="section-label">Training Focus (Today)</p>
-      <textarea id="trainFocus" placeholder="e.g. Upper push strength + speed work. Groove bench technique, attack top set."></textarea>
-
-      <p class="section-label">Session Type</p>
-      <div class="pill-row" data-group="sessionType">
-        <div class="pill" data-value="Football">Football</div>
-        <div class="pill" data-value="Upper">Upper</div>
-        <div class="pill" data-value="Lower">Lower</div>
-        <div class="pill" data-value="Full">Full</div>
-        <div class="pill" data-value="Speed">Speed</div>
-        <div class="pill" data-value="Conditioning">Conditioning</div>
-      </div>
-
-      <p class="section-label">Execution Grade</p>
-      <div class="pill-row" data-group="execution">
-        <div class="pill orange" data-value="A+">A+</div>
-        <div class="pill orange" data-value="A">A</div>
-        <div class="pill orange" data-value="B">B</div>
-        <div class="pill orange" data-value="C">C</div>
-        <div class="pill red" data-value="D/F">D / F</div>
-      </div>
-
-      <p class="section-label">Training Notes</p>
-      <textarea id="trainingNotes" placeholder="Top sets, volume, speed work, how the body felt, anything to adjust tomorrow."></textarea>
-
-      <p class="section-label">Execution Rules</p>
-      <div class="pill-row" data-group="rules">
-        <div class="pill" data-value="No skipped warmup">No skipped warmup</div>
-        <div class="pill" data-value="No ego lifting">No ego lifting</div>
-        <div class="pill" data-value="Film key sets">Film key sets</div>
-        <div class="pill" data-value="Log weights">Log weights</div>
-      </div>
-    </section>
-
-    <!-- Column 3: ACAD / Night Audit -->
-    <section class="card">
-      <div class="card-title-row">
-        <h2>Acad / Audit</h2>
-        <span class="card-tag">ACAD / LIFE</span>
-      </div>
-
-      <p class="section-label">Academic / Deep Work Block</p>
-      <textarea id="acadBlock" placeholder="e.g. 10–12: Math + Physics. No phone. All assignments into calendar."></textarea>
-
-      <p class="section-label">Top 3 for Today</p>
-      <textarea id="top3" placeholder="1) &#10;2) &#10;3)"></textarea>
-
-      <p class="section-label">Night Audit</p>
-      <textarea id="audit" placeholder="What was a win? What was sloppy? What do you fix tomorrow? Did you live like the athlete you claim to be?"></textarea>
-
-      <p class="section-label">Self-Rating (0–10)</p>
-      <div class="small-row">
         <div>
-          <label for="rateDiscipline">Discipline</label>
+          <label for="rateDiscipline">Discipline (0–10)</label>
           <input id="rateDiscipline" type="number" min="0" max="10" step="1" placeholder="0–10" />
         </div>
-        <div>
-          <label for="rateFocus">Focus</label>
-          <input id="rateFocus" type="number" min="0" max="10" step="1" placeholder="0–10" />
-        </div>
-      </div>
-    </section>
-    <section class="panel">
-  <div class="panel-header">
-    <h2>Ares AI Console</h2>
-    <span class="subtext">terminal chat</span>
-  </div>
-
-  <div class="terminal-chat">
-    <div class="terminal-output" id="terminalOutput">
-      <div class="terminal-line system-line">
-        Ares online. Feed me data or ask a question.
-      </div>
-    </div>
-
-    <form id="terminalForm" class="terminal-input-row">
-      <span class="prompt-label">YOU &gt;</span>
-      <input
-        id="terminalInput"
-        type="text"
-        autocomplete="off"
-        placeholder="Ask Ares anything about your day, training, or data..."
-      />
-      <button type="submit">Send</button>
-    </form>
-  </div>
-</section>
-
-    <!-- Settings / Targets -->
-    <section class="card">
-      <div class="card-title-row">
-        <h2>System Settings</h2>
-        <span class="card-tag">Targets</span>
       </div>
 
-      <p class="section-label">Targets</p>
-      <p class="today-subtitle" style="margin-bottom:10px;">
-        These targets drive the Today at a Glance tags (sleep debt, calories high, protein hit, screen locked).
-      </p>
-
-      <div class="tiny-row">
-        <div>
-          <label for="targetSleep">Sleep target (hrs)</label>
-          <input id="targetSleep" type="number" step="0.1" placeholder="e.g. 8.0" />
-        </div>
-        <div>
-          <label for="targetScreen">Max screen (hrs)</label>
-          <input id="targetScreen" type="number" step="0.1" placeholder="e.g. 3.0" />
-        </div>
-        <div>
-          <label for="targetDiscipline">Discipline target (0–10)</label>
-          <input id="targetDiscipline" type="number" step="1" min="0" max="10" placeholder="e.g. 8" />
-        </div>
-      </div>
-
-      <div class="small-row">
-        <div>
-          <label for="targetCalories">Calories target</label>
-          <input id="targetCalories" type="number" step="1" placeholder="e.g. 2300" />
-        </div>
-        <div>
-          <label for="targetProtein">Protein target (g)</label>
-          <input id="targetProtein" type="number" step="1" placeholder="e.g. 190" />
-        </div>
-      </div>
-
-      <button id="saveSettings">Save Settings</button>
+      <p class="section-label">Notes</p>
+      <textarea id="vitalNotes" placeholder="Keep it short. What matters today?"></textarea>
     </section>
 
-        <!-- Habit Tracker -->
+    <!-- History (kept) -->
     <section class="card">
       <div class="card-title-row">
-        <h2>Habit Tracker</h2>
-        <span class="card-tag">Discipline</span>
+        <h2>History</h2>
+        <span class="card-tag">LAST 7</span>
       </div>
 
-      <p class="section-label">Daily Habits</p>
-      <p class="today-subtitle" style="margin-bottom:10px;">
-        Name the habit once. Toggle "Done today" each night. Ares tracks streaks, best run, and weekly consistency.
-      </p>
-
-      <!-- Habit 1 -->
-      <div class="habit-row-outer">
-        <div class="habit-main">
-          <input
-            id="habit1Name"
-            class="habit-name"
-            type="text"
-            placeholder="Habit 1 label (e.g. No phone in bed)"
-          />
-          <label class="habit-toggle">
-            <input id="habit1Done" type="checkbox" />
-            <span class="habit-toggle-pill">Done today</span>
-          </label>
-        </div>
-        <div class="habit-meta">
-          <div class="habit-stats-text">
-            <span id="habit1Streak">0</span>d streak • best
-            <span id="habit1Best">0</span>d •
-            <span id="habit1Total">0</span>x total
-          </div>
-          <div class="habit-week" id="habit1Week"></div>
-        </div>
-      </div>
-
-      <!-- Habit 2 -->
-      <div class="habit-row-outer">
-        <div class="habit-main">
-          <input
-            id="habit2Name"
-            class="habit-name"
-            type="text"
-            placeholder="Habit 2 label (e.g. No scrolling after 10pm)"
-          />
-          <label class="habit-toggle">
-            <input id="habit2Done" type="checkbox" />
-            <span class="habit-toggle-pill">Done today</span>
-          </label>
-        </div>
-        <div class="habit-meta">
-          <div class="habit-stats-text">
-            <span id="habit2Streak">0</span>d streak • best
-            <span id="habit2Best">0</span>d •
-            <span id="habit2Total">0</span>x total
-          </div>
-          <div class="habit-week" id="habit2Week"></div>
-        </div>
-      </div>
-
-      <!-- Habit 3 -->
-      <div class="habit-row-outer">
-        <div class="habit-main">
-          <input
-            id="habit3Name"
-            class="habit-name"
-            type="text"
-            placeholder="Habit 3 label (e.g. Hit protein target)"
-          />
-          <label class="habit-toggle">
-            <input id="habit3Done" type="checkbox" />
-            <span class="habit-toggle-pill">Done today</span>
-          </label>
-        </div>
-        <div class="habit-meta">
-          <div class="habit-stats-text">
-            <span id="habit3Streak">0</span>d streak • best
-            <span id="habit3Best">0</span>d •
-            <span id="habit3Total">0</span>x total
-          </div>
-          <div class="habit-week" id="habit3Week"></div>
-        </div>
-      </div>
-
-      <!-- Habit 4 -->
-      <div class="habit-row-outer">
-        <div class="habit-main">
-          <input
-            id="habit4Name"
-            class="habit-name"
-            type="text"
-            placeholder="Habit 4 label (e.g. Walk after dinner)"
-          />
-          <label class="habit-toggle">
-            <input id="habit4Done" type="checkbox" />
-            <span class="habit-toggle-pill">Done today</span>
-          </label>
-        </div>
-        <div class="habit-meta">
-          <div class="habit-stats-text">
-            <span id="habit4Streak">0</span>d streak • best
-            <span id="habit4Best">0</span>d •
-            <span id="habit4Total">0</span>x total
-          </div>
-          <div class="habit-week" id="habit4Week"></div>
-        </div>
-      </div>
-    </section>
-
-
-    <!-- Column: History & Weekly View -->
-    <section class="card">
-      <div class="card-title-row">
-        <h2>History & Weekly View</h2>
-        <span class="card-tag">Log</span>
-      </div>
-      <p class="section-label">Last 7 days (weight / calories / discipline)</p>
+      <p class="section-label">Last 7 days (weight / calories / trained)</p>
       <div class="history-table-wrapper">
         <table class="history-table">
           <thead>
@@ -424,100 +127,25 @@
               <th>Date</th>
               <th>Weight</th>
               <th>Calories</th>
-              <th>Discipline</th>
+              <th>Trained</th>
             </tr>
           </thead>
-          <tbody id="historyBody">
-            <!-- Filled by JS -->
-          </tbody>
+          <tbody id="historyBody"></tbody>
         </table>
       </div>
+
       <p class="section-label" style="margin-top:10px;">Weight Trend (7 days)</p>
       <canvas id="weightChart" height="120" style="margin-top:8px;"></canvas>
     </section>
   </main>
 
   <footer class="footer">
-    Tip: Bookmark this site and set it as your first tab. Open it every morning and close it only when the Night Audit is complete.
+    Standard: log this in under 2 minutes — every day.
   </footer>
 
   <!-- Chart.js for weight graph -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <script src="/js/main.js"></script>
-    <div id="toastContainer" class="toast-container"></div>
-    <script>
-  // Basic in-page chat history
-  // Basic in-page chat history.
-// THE PROGRAM persona is now defined in the backend (aresChat.js),
-// so we only track user/assistant messages here.
-const chatHistory = [];
-
-
-
-  const terminalForm = document.getElementById("terminalForm");
-  const terminalInput = document.getElementById("terminalInput");
-  const terminalOutput = document.getElementById("terminalOutput");
-
-  function appendLine(text, type) {
-    const line = document.createElement("div");
-    line.classList.add("terminal-line");
-
-    if (type === "user") line.classList.add("user-line");
-    if (type === "ares") line.classList.add("ares-line");
-    if (type === "system") line.classList.add("system-line");
-
-    line.textContent = text;
-    terminalOutput.appendChild(line);
-    terminalOutput.scrollTop = terminalOutput.scrollHeight;
-  }
-
-  terminalForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const input = terminalInput.value.trim();
-    if (!input) return;
-
-    // Show user line
-    appendLine(input, "user");
-    chatHistory.push({ role: "user", content: input });
-    terminalInput.value = "";
-
-    // Show temporary "thinking" line
-    const thinkingLine = document.createElement("div");
-    thinkingLine.classList.add("terminal-line", "ares-line");
-    thinkingLine.textContent = "…thinking";
-    terminalOutput.appendChild(thinkingLine);
-    terminalOutput.scrollTop = terminalOutput.scrollHeight;
-
-    try {
-      // Call your backend API route that talks to OpenAI
-      const res = await fetch("/api/ares-chat", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    messages: chatHistory,
-    entry: window.currentAresEntry || null
-  })
-});
-
-
-      if (!res.ok) {
-        throw new Error("API error");
-      }
-
-      const data = await res.json();
-      const reply = data.reply || "I hit an error processing that.";
-
-      // replace thinking line
-      thinkingLine.textContent = reply;
-      chatHistory.push({ role: "assistant", content: reply });
-    } catch (err) {
-      thinkingLine.textContent =
-        "Error talking to Ares API. Check /api/ares-chat on the server.";
-    }
-  });
-</script>
-
-
+  <script src="/js/main.js"></script>
+  <div id="toastContainer" class="toast-container"></div>
 </body>
 </html>

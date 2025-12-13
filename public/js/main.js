@@ -18,11 +18,10 @@ function getDefaultSettings() {
   "calories","protein","carbs","fats",
   "steps","water",
   "mood","screen","vitalNotes",
-  "trainFocus","acadBlock","trainingNotes",
-  "top3","audit",
-  "rateDiscipline","rateFocus",
-  "habit1Done","habit2Done","habit3Done","habit4Done"
+  "rateDiscipline",
+  "trained"
 ];
+
 
 
     let currentDate = new Date();
@@ -466,11 +465,17 @@ function getSettings() {
           if (Object.keys(d).length > 0) hasAny = true;
 
           const row = document.createElement("tr");
+          const trainedText =
+            d.trained === "1"
+            ? "Yes"
+            : d.trained === "0"
+            ? "No"
+            : "-";
           const cells = [
             key,
             d.weight || "-",
             d.calories || "-",
-            d.rateDiscipline || "-"
+            trainedText
           ];
           cells.forEach(text => {
             const td = document.createElement("td");
