@@ -11,99 +11,108 @@
   <header class="top-row">
     <div>
       <h1>Ares Terminal</h1>
-      <p class="subtitle">Simple Daily Log — low friction, high consistency. Log to get your score. Check settings to set goals for each data point.</p>
+      <p class="subtitle">
+        Simple daily log — low friction, high consistency. Log to earn your score.
+      </p>
+
       <div class="date-nav">
-        <button class="ghost-btn" id="prevDay">&larr;</button>
+        <button class="ghost-btn" id="prevDay" type="button" aria-label="Previous day">&larr;</button>
         <p class="date" id="currentDate">Loading date…</p>
-        <button class="ghost-btn" id="nextDay">&rarr;</button>
+        <button class="ghost-btn" id="nextDay" type="button" aria-label="Next day">&rarr;</button>
       </div>
     </div>
 
     <div class="top-actions">
-      <button id="saveDay">Save Day</button>
-      <button id="exportData">Export Data</button>
-      <button id="resetToday">Reset Day</button>
-      <button id="hardReset">Hard Reset</button>
+      <button id="saveDay" type="button">Save Day</button>
+      <button id="exportData" type="button">Export Data</button>
+      <button id="resetToday" type="button">Reset Day</button>
+      <button id="hardReset" type="button">Hard Reset</button>
     </div>
   </header>
 
   <main class="grid grid-2">
-      <section class="card" id="scoreCard">
-  <div class="card-title-row">
-    <h2>Daily Score</h2>
-    <span class="card-tag" id="dayGrade">–</span>
-  </div>
+    <!-- Daily Score -->
+    <section class="card" id="scoreCard">
+      <div class="card-title-row">
+        <h2>Daily Score</h2>
+        <span class="card-tag" id="dayGrade">–</span>
+      </div>
 
-  <p class="subtitle" style="margin-bottom: 10px;">
-    Non-negotiables. Auto-graded.
-  </p>
+      <p class="subtitle" style="margin-bottom: 10px;">
+        Non-negotiables. Auto-graded.
+      </p>
 
-  <div class="score-grid">
-    <div class="score-item" id="chkSleep">Sleep</div>
-    <div class="score-item" id="chkCalories">Calories</div>
-    <div class="score-item" id="chkProtein">Protein</div>
-    <div class="score-item" id="chkScreen">Screen</div>
-    <div class="score-item" id="chkTrained">Trained</div>
-  </div>
+      <div class="score-grid" role="list">
+        <div class="score-item" id="chkSleep" role="listitem">Sleep</div>
+        <div class="score-item" id="chkCalories" role="listitem">Calories</div>
+        <div class="score-item" id="chkProtein" role="listitem">Protein</div>
+        <div class="score-item" id="chkScreen" role="listitem">Screen</div>
+        <div class="score-item" id="chkTrained" role="listitem">Trained</div>
+      </div>
 
-  <div class="score-summary">
-    <div class="score-big" id="scoreBig">–</div>
-    <div class="score-small" id="scoreDetail">Enter data to score the day.</div>
-  </div>
-</section>
+      <div class="score-summary">
+        <div class="score-big" id="scoreBig">–</div>
+        <div class="score-small" id="scoreDetail">Enter data to score the day.</div>
+      </div>
+    </section>
 
-    <!-- Vitals & Intake -->
-    <section class="card">
+    <!-- Data -->
+    <section class="card" aria-label="Daily data entry">
       <div class="card-title-row">
         <h2>Data</h2>
-        <span class="card-tag">DAILY</span>
+        <span class="card-tag">Daily</span>
       </div>
 
       <div class="tiny-row">
         <div>
           <label for="weight">Weight (lbs)</label>
-          <input id="weight" type="number" step="0.1" placeholder="e.g. 200.4" />
+          <input id="weight" type="number" step="0.1" inputmode="decimal" autocomplete="off" placeholder="e.g. 200.4" />
         </div>
+
         <div>
           <label for="sleep">Sleep (hrs)</label>
-          <input id="sleep" type="number" step="0.1" placeholder="e.g. 7.5" />
+          <input id="sleep" type="number" step="0.1" inputmode="decimal" autocomplete="off" placeholder="e.g. 7.5" />
         </div>
+
         <div>
           <label for="energy">Energy (1–10)</label>
-          <input id="energy" type="number" min="1" max="10" step="1" placeholder="e.g. 7" />
+          <input id="energy" type="number" min="1" max="10" step="1" inputmode="numeric" autocomplete="off" placeholder="e.g. 7" />
         </div>
       </div>
 
       <div class="small-row">
         <div>
           <label for="calories">Calories</label>
-          <input id="calories" type="number" step="1" placeholder="e.g. 2300" />
+          <input id="calories" type="number" step="1" inputmode="numeric" autocomplete="off" placeholder="e.g. 2300" />
         </div>
+
         <div>
           <label for="protein">Protein (g)</label>
-          <input id="protein" type="number" step="1" placeholder="e.g. 190" />
+          <input id="protein" type="number" step="1" inputmode="numeric" autocomplete="off" placeholder="e.g. 190" />
         </div>
       </div>
 
       <div class="small-row">
         <div>
           <label for="carbs">Carbs (g)</label>
-          <input id="carbs" type="number" step="1" placeholder="e.g. 200" />
+          <input id="carbs" type="number" step="1" inputmode="numeric" autocomplete="off" placeholder="e.g. 200" />
         </div>
+
         <div>
           <label for="fats">Fats (g)</label>
-          <input id="fats" type="number" step="1" placeholder="e.g. 60" />
+          <input id="fats" type="number" step="1" inputmode="numeric" autocomplete="off" placeholder="e.g. 60" />
         </div>
       </div>
 
       <div class="small-row">
         <div>
           <label for="steps">Steps</label>
-          <input id="steps" type="number" step="1" placeholder="e.g. 8000" />
+          <input id="steps" type="number" step="1" inputmode="numeric" autocomplete="off" placeholder="e.g. 8000" />
         </div>
+
         <div>
           <label for="water">Water (L)</label>
-          <input id="water" type="number" step="0.1" placeholder="e.g. 3.0" />
+          <input id="water" type="number" step="0.1" inputmode="decimal" autocomplete="off" placeholder="e.g. 3.0" />
         </div>
       </div>
 
@@ -111,29 +120,30 @@
       <div class="small-row">
         <div>
           <label for="mood">Mood (1–10)</label>
-          <input id="mood" type="number" min="1" max="10" step="1" placeholder="e.g. 8" />
+          <input id="mood" type="number" min="1" max="10" step="1" inputmode="numeric" autocomplete="off" placeholder="e.g. 8" />
         </div>
+
         <div>
           <label for="screen">Screen Time (hrs)</label>
-          <input id="screen" type="number" step="0.1" placeholder="e.g. 4.5" />
+          <input id="screen" type="number" step="0.1" inputmode="decimal" autocomplete="off" placeholder="e.g. 4.5" />
         </div>
       </div>
 
       <p class="section-label">Trained Today?</p>
       <div class="trained-row">
-        <label class="habit-toggle">
+        <label class="habit-toggle" aria-label="Trained today">
           <input id="trained" type="checkbox" />
           <span class="habit-toggle-pill">Trained</span>
         </label>
 
         <div>
           <label for="rateDiscipline">Discipline (0–10)</label>
-          <input id="rateDiscipline" type="number" min="0" max="10" step="1" placeholder="0–10" />
+          <input id="rateDiscipline" type="number" min="0" max="10" step="1" inputmode="numeric" autocomplete="off" placeholder="0–10" />
         </div>
       </div>
 
       <p class="section-label">Notes</p>
-      <textarea id="vitalNotes" placeholder="Keep it short. What matters today?"></textarea>
+      <textarea id="vitalNotes" rows="3" autocomplete="off" placeholder="Keep it short. What matters today?"></textarea>
     </section>
   </main>
 
@@ -143,7 +153,7 @@
 
   <div id="toastContainer" class="toast-container"></div>
 
-  <!-- IMPORTANT: this makes data load/save work -->
+  <!-- App logic -->
   <script src="/js/main.js"></script>
 </body>
 </html>
