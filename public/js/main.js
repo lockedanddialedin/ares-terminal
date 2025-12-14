@@ -4,6 +4,37 @@
 
 const STORAGE_PREFIX = "aresTerminal_v1_";
 
+const SETTINGS_KEY = STORAGE_PREFIX + "settings";
+
+const DEFAULT_SETTINGS = {
+  sleep: 7.0,
+  calories: 2000,
+  caloriesTolerance: 250,
+  protein: 180,
+  screen: 4.0
+};
+
+let settings = { ...DEFAULT_SETTINGS };
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (!raw) {
+      settings = { ...DEFAULT_SETTINGS };
+      return;
+    }
+    const parsed = JSON.parse(raw);
+    settings = { ...DEFAULT_SETTINGS, ...parsed };
+  } catch {
+    settings = { ...DEFAULT_SETTINGS };
+  }
+}
+
+function persistSettings() {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+
+
 // Only fields that exist in your current UI
 const FIELD_IDS = [
   "weight", "sleep", "energy",
@@ -15,13 +46,16 @@ const FIELD_IDS = [
 ];
 
 // ---- Daily Score targets (edit these once and forget) ----
-const SCORE_TARGETS = {
-  sleep: 7.0,             // hrs
-  calories: 2000,         // target
-  caloriesTolerance: 250, // +/- range to count as "hit"
-  protein: 180,           // g
-  screen: 4.0             // hrs max
-};
+function getScoreTargets() {
+  return {
+    sleep: Number(settings.sleep),
+    calories: Number(settings.calories),
+    caloriesTolerance: Number(settings.caloriesTolerance),
+    protein: Number(settings.protein),
+    screen: Number(settings.screen)
+  };
+}
+
 
 let currentDate = new Date();
 let currentDateKey = null;
@@ -107,6 +141,7 @@ function setCheck(id, ok) {
 }
 
 function computeDailyScore() {
+  const t = getScoreTargets();
   const sleep = parseFloat(document.getElementById("sleep")?.value || "");
   const calories = parseFloat(document.getElementById("calories")?.value || "");
   const protein = parseFloat(document.getElementById("protein")?.value || "");
@@ -239,6 +274,55 @@ async function loadDay(dateKey) {
     isLoadingDay = false;
   }
 }
+function openSettingsModal() {
+  const back = document.getElementById("settingsBackdrop");
+  if (!back) return;
+
+  // Fill inputs from settings
+  document.getElementById("setSleep").value = settings.sleep;
+  document.getElementById("setCalories").value = settings.calories;
+  document.getElementById("setCaloriesTol").value = settings.caloriesTolerance;
+  document.getElementById("setProtein").value = settings.protein;
+  document.getElementById("setScreen").value = settings.screen;
+
+  back.classList.add("open");
+  back.setAttribute("aria-hidden", "false");
+}
+
+function closeSettingsModal() {
+  const back = document.getElementById("settingsBackdrop");
+  if (!back) return;
+  back.classList.remove("open");
+  back.setAttribute("aria-hidden", "true");
+}
+
+function readNumber(id, fallback) {
+  const el = document.getElementById(id);
+  if (!el) return fallback;
+  const v = parseFloat(el.value);
+  return Number.isFinite(v) ? v : fallback;
+}
+
+function saveSettingsFromModal() {
+  settings.sleep = readNumber("setSleep", DEFAULT_SETTINGS.sleep);
+  settings.calories = readNumber("setCalories", DEFAULT_SETTINGS.calories);
+  settings.caloriesTolerance = readNumber("setCaloriesTol", DEFAULT_SETTINGS.caloriesTolerance);
+  settings.protein = readNumber("setProtein", DEFAULT_SETTINGS.protein);
+  settings.screen = readNumber("setScreen", DEFAULT_SETTINGS.screen);
+
+  persistSettings();
+  updateDailyScore();
+  showToast("success", "Settings saved");
+  closeSettingsModal();
+}
+
+function resetSettingsToDefault() {
+  settings = { ...DEFAULT_SETTINGS };
+  persistSettings();
+  updateDailyScore();
+  showToast("success", "Defaults restored");
+  closeSettingsModal();
+}
 
 /* ---------- Events ---------- */
 
@@ -343,16 +427,44 @@ function initButtons() {
   if (hardResetBtn) hardResetBtn.addEventListener("click", hardReset);
   if (prevDayBtn) prevDayBtn.addEventListener("click", () => shiftDay(-1));
   if (nextDayBtn) nextDayBtn.addEventListener("click", () => shiftDay(1));
+
+  // Settings modal
+  const openSettingsBtn = document.getElementById("openSettings");
+  const closeSettingsBtn = document.getElementById("closeSettings");
+  const cancelSettingsBtn = document.getElementById("cancelSettings");
+  const saveSettingsBtn = document.getElementById("saveSettings");
+  const resetSettingsBtn = document.getElementById("resetSettings");
+  const settingsBackdrop = document.getElementById("settingsBackdrop");
+
+  if (openSettingsBtn) openSettingsBtn.addEventListener("click", openSettingsModal);
+  if (closeSettingsBtn) closeSettingsBtn.addEventListener("click", closeSettingsModal);
+  if (cancelSettingsBtn) cancelSettingsBtn.addEventListener("click", closeSettingsModal);
+  if (saveSettingsBtn) saveSettingsBtn.addEventListener("click", saveSettingsFromModal);
+  if (resetSettingsBtn) resetSettingsBtn.addEventListener("click", resetSettingsToDefault);
+
+  // Click outside modal to close
+  if (settingsBackdrop) {
+    settingsBackdrop.addEventListener("click", (e) => {
+      if (e.target === settingsBackdrop) closeSettingsModal();
+    });
+  }
+
+  // Esc to close
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeSettingsModal();
+  });
 }
+
 
 function init() {
   currentDate = new Date();
   currentDateKey = formatDateKey(currentDate);
+  loadSettings();
 
   updateDateDisplay();
   initFields();
   initButtons();
-
+  
   loadDay(currentDateKey);
   updateDailyScore();
 }

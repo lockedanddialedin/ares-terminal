@@ -27,8 +27,57 @@
       <button id="exportData" type="button">Export Data</button>
       <button id="resetToday" type="button">Reset Day</button>
       <button id="hardReset" type="button">Hard Reset</button>
+      <button id="openSettings" type="button">Settings</button>
     </div>
   </header>
+  <!-- Settings Modal -->
+<div class="modal-backdrop" id="settingsBackdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Settings">
+    <div class="modal-header">
+      <div>
+        <h2 style="margin-bottom: 2px;">Settings</h2>
+        <p class="modal-subtitle">Set your non-negotiable standards.</p>
+      </div>
+      <button class="ghost-btn" id="closeSettings" type="button" aria-label="Close settings">×</button>
+    </div>
+
+    <div class="modal-grid">
+      <div>
+        <label for="setSleep">Sleep minimum (hrs)</label>
+        <input id="setSleep" type="number" step="0.1" inputmode="decimal" />
+      </div>
+
+      <div>
+        <label for="setCalories">Calories target</label>
+        <input id="setCalories" type="number" step="1" inputmode="numeric" />
+      </div>
+
+      <div>
+        <label for="setCaloriesTol">Calories tolerance (+/−)</label>
+        <input id="setCaloriesTol" type="number" step="1" inputmode="numeric" />
+      </div>
+
+      <div>
+        <label for="setProtein">Protein minimum (g)</label>
+        <input id="setProtein" type="number" step="1" inputmode="numeric" />
+      </div>
+
+      <div>
+        <label for="setScreen">Screen maximum (hrs)</label>
+        <input id="setScreen" type="number" step="0.1" inputmode="decimal" />
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button id="resetSettings" type="button">Reset Defaults</button>
+      <div class="modal-actions-right">
+        <button class="ghost-btn" id="cancelSettings" type="button">Cancel</button>
+        <button id="saveSettings" type="button">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
   <main class="grid grid-2">
     <!-- Daily Score -->
