@@ -11,7 +11,7 @@
   <header class="top-row">
     <div>
       <h1>Ares Terminal</h1>
-      <p class="subtitle">Simple Daily Log — low friction, high consistency</p>
+      <p class="subtitle">Simple Daily Log — low friction, high consistency. Log to get your score. Check settings to set goals for each data point.</p>
       <div class="date-nav">
         <button class="ghost-btn" id="prevDay">&larr;</button>
         <p class="date" id="currentDate">Loading date…</p>
@@ -28,10 +28,34 @@
   </header>
 
   <main class="grid grid-2">
+      <section class="card" id="scoreCard">
+  <div class="card-title-row">
+    <h2>Daily Score</h2>
+    <span class="card-tag" id="dayGrade">–</span>
+  </div>
+
+  <p class="subtitle" style="margin-bottom: 10px;">
+    Non-negotiables. Auto-graded.
+  </p>
+
+  <div class="score-grid">
+    <div class="score-item" id="chkSleep">Sleep</div>
+    <div class="score-item" id="chkCalories">Calories</div>
+    <div class="score-item" id="chkProtein">Protein</div>
+    <div class="score-item" id="chkScreen">Screen</div>
+    <div class="score-item" id="chkTrained">Trained</div>
+  </div>
+
+  <div class="score-summary">
+    <div class="score-big" id="scoreBig">–</div>
+    <div class="score-small" id="scoreDetail">Enter data to score the day.</div>
+  </div>
+</section>
+
     <!-- Vitals & Intake -->
     <section class="card">
       <div class="card-title-row">
-        <h2>Vitals & Intake</h2>
+        <h2>Data</h2>
         <span class="card-tag">DAILY</span>
       </div>
 

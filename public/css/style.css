@@ -944,3 +944,57 @@ button:active{
   body{ padding: 14px; }
   .card{ padding: 14px; }
 }
+/* Daily Score */
+.score-grid{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.score-item{
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.82);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.score-item::after{
+  content: "—";
+  opacity: 0.5;
+  font-weight: 700;
+}
+
+.score-item.pass{
+  border-color: rgba(10,132,255,0.35);
+  background: rgba(10,132,255,0.12);
+}
+.score-item.pass::after{ content: "✓"; opacity: 1; }
+
+.score-item.fail{
+  border-color: rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.03);
+}
+.score-item.fail::after{ content: "✕"; opacity: 0.8; }
+
+.score-summary{
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.score-big{
+  font-size: 2.2rem;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+}
+
+.score-small{
+  color: rgba(255,255,255,0.62);
+  font-size: 0.95rem;
+}

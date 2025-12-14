@@ -31,6 +31,85 @@ function getDefaultSettings() {
     let lastSyncTime = null;
     let weightChart = null;
 
+    // ---- Daily Score targets (edit these once and forget) ----
+const SCORE_TARGETS = {
+  sleep: 7.0,             // hrs
+  calories: 2000,         // target
+  caloriesTolerance: 250, // +/- range to count as "hit"
+  protein: 180,           // g
+  screen: 4.0             // hrs max
+};
+
+// Letter grade from how many non-negotiables you hit (out of 5)
+function gradeFromHits(hits) {
+  if (hits === 5) return "A";
+  if (hits === 4) return "B";
+  if (hits === 3) return "C";
+  if (hits === 2) return "D";
+  return "F";
+}
+
+function setCheck(id, ok) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove("pass", "fail");
+  if (ok === null) return; // not enough data yet
+  el.classList.add(ok ? "pass" : "fail");
+}
+
+function updateDailyScore() {
+  // Safely read values (blank = no score yet)
+  const sleep = parseFloat(document.getElementById("sleep")?.value || "");
+  const calories = parseFloat(document.getElementById("calories")?.value || "");
+  const protein = parseFloat(document.getElementById("protein")?.value || "");
+  const screen = parseFloat(document.getElementById("screen")?.value || "");
+  const trained = document.getElementById("trained")?.checked;
+
+  const hasAny =
+    !isNaN(sleep) || !isNaN(calories) || !isNaN(protein) || !isNaN(screen) || trained;
+
+  // Determine pass/fail (null = missing input)
+  const okSleep = isNaN(sleep) ? null : sleep >= SCORE_TARGETS.sleep;
+  const okCalories = isNaN(calories)
+    ? null
+    : Math.abs(calories - SCORE_TARGETS.calories) <= SCORE_TARGETS.caloriesTolerance;
+  const okProtein = isNaN(protein) ? null : protein >= SCORE_TARGETS.protein;
+  const okScreen = isNaN(screen) ? null : screen <= SCORE_TARGETS.screen;
+  const okTrained = trained ? true : false; // checkbox always has a value
+
+  // Update UI checks
+  setCheck("chkSleep", okSleep);
+  setCheck("chkCalories", okCalories);
+  setCheck("chkProtein", okProtein);
+  setCheck("chkScreen", okScreen);
+  setCheck("chkTrained", okTrained);
+
+  // Compute hits (count only true; missing counts as 0)
+  const hits =
+    (okSleep === true) +
+    (okCalories === true) +
+    (okProtein === true) +
+    (okScreen === true) +
+    (okTrained === true);
+
+  const grade = gradeFromHits(hits);
+
+  const gradeTag = document.getElementById("dayGrade");
+  const big = document.getElementById("scoreBig");
+  const detail = document.getElementById("scoreDetail");
+
+  if (!hasAny) {
+    if (gradeTag) gradeTag.textContent = "–";
+    if (big) big.textContent = "–";
+    if (detail) detail.textContent = "Enter data to score the day.";
+    return;
+  }
+
+  if (gradeTag) gradeTag.textContent = grade;
+  if (big) big.textContent = grade;
+  if (detail) detail.textContent = `${hits}/5 non-negotiables hit`;
+}
+
     function formatDateKey(d) {
       const y = d.getFullYear();
       const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -243,6 +322,8 @@ function getSettings() {
         saveDay(false);
       }, 800); // debounce ~0.8s
       updateTodayStrip();
+      updateDailyScore();
+
     }
 
     function applySingleSelectPill(group, value) {
@@ -266,7 +347,7 @@ function getSettings() {
 
     // 🔥 Make today’s entry available globally for THE PROGRAM
     window.currentAresEntry = data;
-
+    updateDailyScore();
     FIELD_IDS.forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
@@ -275,6 +356,7 @@ function getSettings() {
       } else {
         el.value = data[id] ?? "";
       }
+      
     });
 
     applySingleSelectPill("sessionType", data.sessionType || "");
