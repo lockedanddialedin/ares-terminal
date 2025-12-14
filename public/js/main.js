@@ -57,6 +57,7 @@ function getScoreTargets() {
 }
 
 
+
 let currentDate = new Date();
 let currentDateKey = null;
 let autoSaveTimer = null;
@@ -142,6 +143,7 @@ function setCheck(id, ok) {
 
 function computeDailyScore() {
   const t = getScoreTargets();
+
   const sleep = parseFloat(document.getElementById("sleep")?.value || "");
   const calories = parseFloat(document.getElementById("calories")?.value || "");
   const protein = parseFloat(document.getElementById("protein")?.value || "");
@@ -151,14 +153,14 @@ function computeDailyScore() {
   const hasAny =
     !isNaN(sleep) || !isNaN(calories) || !isNaN(protein) || !isNaN(screen) || trained;
 
-  const okSleep = isNaN(sleep) ? null : sleep >= SCORE_TARGETS.sleep;
+  const okSleep = isNaN(sleep) ? null : sleep >= t.sleep;
 
   const okCalories = isNaN(calories)
     ? null
-    : Math.abs(calories - SCORE_TARGETS.calories) <= SCORE_TARGETS.caloriesTolerance;
+    : Math.abs(calories - t.calories) <= t.caloriesTolerance;
 
-  const okProtein = isNaN(protein) ? null : protein >= SCORE_TARGETS.protein;
-  const okScreen = isNaN(screen) ? null : screen <= SCORE_TARGETS.screen;
+  const okProtein = isNaN(protein) ? null : protein >= t.protein;
+  const okScreen = isNaN(screen) ? null : screen <= t.screen;
   const okTrained = trained ? true : false;
 
   const hits =
@@ -177,6 +179,7 @@ function computeDailyScore() {
     checks: { okSleep, okCalories, okProtein, okScreen, okTrained }
   };
 }
+
 
 function updateDailyScore() {
   const score = computeDailyScore();
